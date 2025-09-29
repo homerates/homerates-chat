@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HomeRates.ai — Ask Me Anything</title>
+</head>
+<body>
+  <h1>HomeRates Chat</h1>
+  <div id="chat"></div>
+  <textarea id="prompt" placeholder="Message…"></textarea>
+  <button id="sendBtn">Send</button>
+
+  <script>
+    async function callYourAPI(messages) {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      return data.reply || '(No content returned)';
+    }
+
+    document.getElementById('sendBtn').onclick = async () => {
+      const prompt = document.getElementById('prompt').value;
+      if (!prompt) return;
+      const reply = await callYourAPI([{ role: 'user', content: prompt }]);
+      const chat = document.getElementById('chat');
+      chat.innerHTML += `<p><strong>You:</strong> ${prompt}</p>`;
+      chat.innerHTML += `<p><strong>AI:</strong> ${reply}</p>`;
+      document.getElementById('prompt').value = '';
+    };
+  </script>
+</body>
+</html>
