@@ -1,458 +1,269 @@
+<!-- index.html (root) — ChatGPT-style UI with NO frameworks -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>HomeRates.ai — Ask Me Anything</title>
-
-  <!-- Optional system font stack to approximate ChatGPT UI -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HomeRates Chat</title>
   <style>
-    /* ---------- Base / Theme ---------- */
-    *,*::before,*::after{box-sizing:border-box}
-    html,body{height:100%;margin:0}
-    body{
-      font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      background:#0e0f12; color:#eaeaec;
-    }
-    :root{
-      --bg:#0e0f12; --bg-elev:#121316; --panel:#15171b;
-      --text:#eaeaec; --muted:#9a9aa0; --border:#24262b;
-      --accent:#10a37f; --danger:#ef4444;
-      --radius:12px; --sidebar-w:300px; --max-chat-w:820px;
-      --shadow:0 4px 18px rgba(0,0,0,.25);
-    }
-    @media (prefers-color-scheme: light){
-      :root{
-        --bg:#ffffff; --bg-elev:#f7f7f8; --panel:#f0f0f1;
-        --text:#0b0b0c; --muted:#6b6b70; --border:#e5e7eb;
-      }
-      body{background:#ffffff;color:#0b0b0c}
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: #111; background: #f5f5f5; }
+
+    :root {
+      --border: #e6e6e6;
+      --muted: #6b7280;
+      --bg: #ffffff;
+      --bg-subtle: rgba(255,255,255,0.85);
+      --shadow: 0 1px 2px rgba(0,0,0,0.04);
+      --assistant: #ffffff;
+      --assistant-border: #e5e7eb;
+      --user: #111111;
+      --user-text: #ffffff;
     }
 
-    /* ---------- App Layout ---------- */
-    .app{min-height:100dvh; display:grid; grid-template-columns: var(--sidebar-w) minmax(0,1fr)}
-    .sidebar{
-      background:var(--bg-elev); border-right:1px solid var(--border);
-      display:flex; flex-direction:column; min-width:var(--sidebar-w)
-    }
-    .brand{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
-    .brand .logo{width:24px;height:24px;border-radius:6px;background:var(--accent)}
-    .brand .title{font-weight:700}
+    .app { display: flex; height: 100dvh; width: 100%; overflow: hidden; }
 
-    .side-actions{padding:12px;display:grid;gap:8px}
-    .btn{
-      appearance:none; border:1px solid var(--border); background:var(--panel);
-      padding:10px 12px; border-radius:10px; font-weight:600; cursor:pointer
-    }
-    .btn:hover{filter:brightness(.98)}
-    .btn.primary{background:var(--accent);color:#fff;border-color:transparent}
-    .side-search{padding:0 12px 8px}
-    .side-search input{
-      width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
-      background:var(--panel); color:var(--text)
-    }
-    .side-list{flex:1; overflow:auto; padding:8px 8px 16px}
-    .conv{
-      display:grid; gap:4px; padding:10px; border-radius:10px; cursor:pointer
-    }
-    .conv:hover{background:var(--panel)}
-    .conv.active{background:var(--panel); outline:1px solid var(--border)}
-    .conv-title{font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-    .conv-meta{color:var(--muted); font-size:12px}
-    .conv-ops{display:flex; gap:6px; opacity:.9}
-    .chip{border:1px solid var(--border); padding:2px 6px; border-radius:8px; font-size:11px; color:var(--muted)}
+    /* Sidebar */
+    .sidebar { width: 288px; background: var(--bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sidebar__header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .badge { width: 20px; height: 20px; border-radius: 50%; background: #111; }
+    .brand { font-weight: 600; }
+    .sidebar__sectionLabel { padding: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .sidebar__nav { padding: 0 8px 8px; display: grid; gap: 6px; }
+    .sidebar__item { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 14px; color: #111; text-decoration: none; }
+    .sidebar__item:hover { background: #f3f4f6; }
+    .sidebar__footer { margin-top: auto; padding: 10px 12px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
 
-    .main{display:grid; grid-template-rows:auto minmax(0,1fr) auto; min-width:0}
-    .topbar{
-      position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:center;
-      padding:10px 12px; border-bottom:1px solid var(--border);
-      background:linear-gradient(to bottom,var(--bg),var(--bg) 60%,transparent); backdrop-filter:blur(6px)
-    }
-    .topbar .heading{font-weight:700}
+    /* Chat column */
+    .chat { position: relative; flex: 1; background: #fafafa; }
+    .messages { position: absolute; inset: 0 0 calc(80px + env(safe-area-inset-bottom)) 0; overflow-y: auto; padding: 8px 12px; }
+    .messages__inner { max-width: 768px; margin: 0 auto; padding: 6px 6px 24px; }
 
-    .chatwrap{overflow:auto; display:flex; justify-content:center}
-    .chat{width:100%; max-width:var(--max-chat-w); padding:16px; display:grid; gap:10px}
-    .msg{
-      display:grid; gap:8px; padding:12px; border-radius:var(--radius);
-      border:1px solid var(--border); background:var(--bg-elev)
-    }
-    .msg.user{background:transparent}
-    .msg .role{font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase}
-    .msg .content{overflow:hidden}
-    .msg .ops{display:flex; gap:6px; justify-content:flex-end}
-    .op{font-size:12px; color:var(--muted); cursor:pointer; border:1px solid var(--border); padding:4px 8px; border-radius:8px}
-    .op:hover{filter:brightness(.97)}
-    .typing{display:inline-block; width:1ch; animation:blink 1s steps(1) infinite}
-    @keyframes blink{50%{opacity:.2}}
+    /* Message row */
+    .msgRow { display: flex; gap: 12px; padding: 10px 0; align-items: flex-start; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; margin-top: 2px; flex: 0 0 auto; }
+    .avatar--assistant { background: #111; }
+    .avatar--user { background: #d1d5db; }
+    .bubble { max-width: 85%; padding: 12px 14px; border-radius: 16px; box-shadow: var(--shadow); font-size: 15px; line-height: 1.5; }
+    .bubble--assistant { background: var(--assistant); border: 1px solid var(--assistant-border); }
+    .bubble--user { background: var(--user); color: var(--user-text); margin-left: auto; }
 
-    .composer{border-top:1px solid var(--border); background:linear-gradient(to top,var(--bg),var(--bg) 60%,transparent)}
-    .composer-inner{
-      margin:12px auto; width:100%; max-width:var(--max-chat-w);
-      display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end
-    }
-    .input{background:var(--bg-elev); border:1px solid var(--border); border-radius:14px; padding:10px 12px; display:grid; gap:8px}
-    .input textarea{
-      width:100%; min-height:56px; max-height:240px; resize:none; border:none; outline:none; background:transparent; color:var(--text)
-    }
-    .input .hints{display:flex; gap:10px; flex-wrap:wrap}
-    .hint{font-size:12px; color:var(--muted); border:1px dashed var(--border); border-radius:8px; padding:4px 8px; cursor:pointer}
-    .send{background:var(--accent); color:#fff; border:none; height:40px; padding:0 16px; border-radius:12px; font-weight:700; cursor:pointer}
-    .send[disabled]{opacity:.6; cursor:not-allowed}
-    .button-row{display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:6px}
-    .secondary{background:var(--panel); color:var(--text); border:1px solid var(--border)}
+    /* Jump to latest */
+    .jump { position: absolute; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom)); border: 1px solid var(--border); background: var(--bg-subtle); padding: 6px 10px; border-radius: 999px; font-size: 13px; box-shadow: var(--shadow); display: none; }
+    .jump.show { display: inline-block; }
+    .jump:hover { background: #fff; }
 
-    /* Mobile sidebar overlay */
-    .sidebar-toggle{display:none; position:absolute; left:8px; top:8px; z-index:10; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:6px 10px; font-weight:700; cursor:pointer}
-    @media (max-width:1024px){
-      .app{grid-template-columns:1fr}
-      .sidebar{position:fixed; inset:0 30% 0 0; transform:translateX(-100%); transition:transform .2s ease; z-index:20; box-shadow:8px 0 24px rgba(0,0,0,.25)}
-      .sidebar.open{transform:translateX(0)}
-      .sidebar-scrim{position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; z-index:15}
-      .sidebar-scrim.show{display:block}
-      .sidebar-toggle{display:inline-block}
-    }
+    /* Composer */
+    .composer { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--border); background: var(--bg-subtle); backdrop-filter: saturate(1.1) blur(6px); }
+    .composer__inner { max-width: 768px; margin: 10px auto 2px; display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 16px; background: #fff; box-shadow: var(--shadow); }
+    .composer__input { flex: 1; min-height: 40px; max-height: 168px; border: none; outline: none; resize: none; padding: 8px 10px; font-size: 15px; line-height: 24px; background: transparent; }
+    .composer__send { border: 1px solid var(--border); background: #f3f4f6; border-radius: 12px; padding: 8px 12px; font-size: 14px; color: #6b7280; cursor: pointer; }
+    .composer__send--ready { background: #111; color: #fff; border-color: #111; }
+    .composer__note { max-width: 768px; margin: 4px auto 10px; padding: 0 10px; font-size: 11px; color: var(--muted); }
 
-    /* Compact mode (embed without sidebar) */
-    .compact .sidebar{display:none !important}
-    .compact .app{grid-template-columns:1fr !important}
-
-    /* Markdown tweaks */
-    .msg .content :is(p,ul,ol){margin:.4em 0}
-    .msg .content pre{
-      background:#0b0c10; color:#e5e7eb; padding:12px; border-radius:10px; overflow:auto; border:1px solid var(--border);
-      box-shadow:var(--shadow)
+    /* Responsive: collapse sidebar on small screens */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
     }
-    .msg .content code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:13px}
-    .codebar{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); margin-bottom:6px}
-    .copybtn{border:1px solid var(--border); border-radius:8px; padding:3px 8px; cursor:pointer}
-    .copybtn:hover{filter:brightness(.96)}
   </style>
-
-  <!-- Markdown & Syntax Highlighting (CDN) -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
 </head>
 <body>
   <div class="app">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div class="title">HomeRates Chat</div>
+    <!-- Sidebar (left column) -->
+    <aside class="sidebar">
+      <div class="sidebar__header">
+        <div class="badge" aria-hidden="true"></div>
+        <div class="brand">HomeRates.ai</div>
       </div>
 
-      <div class="side-actions">
-        <button class="btn primary" id="newChatBtn">New chat</button>
-        <button class="btn" id="exportBtn">Export</button>
-      </div>
+      <div class="sidebar__sectionLabel">Conversations</div>
+      <nav class="sidebar__nav" id="convNav">
+        <button class="sidebar__item" type="button">New chat</button>
+        <button class="sidebar__item" type="button">Access Zero options</button>
+        <button class="sidebar__item" type="button">Seller credit vs price cut</button>
+        <button class="sidebar__item" type="button">Jumbo eligibility (H‑1B)</button>
+      </nav>
 
-      <div class="side-search">
-        <input id="searchConv" placeholder="Search conversations…">
-      </div>
+      <div class="sidebar__sectionLabel">Quick links</div>
+      <nav class="sidebar__nav">
+        <a class="sidebar__item" href="/">Ask Anything</a>
+        <a class="sidebar__item" href="https://homerates.ai/knowledge">Knowledge Hub</a>
+        <a class="sidebar__item" href="https://homerates.ai/market-news">Market News</a>
+      </nav>
 
-      <div class="side-list" id="convList" role="navigation" aria-label="Conversations"></div>
+      <div class="sidebar__footer">NMLS #366082 · CA Only</div>
     </aside>
-    <div class="sidebar-scrim" id="scrim"></div>
 
-    <!-- Main -->
-    <main class="main">
-      <button class="sidebar-toggle" id="openSidebar">Menu</button>
-      <div class="topbar"><div class="heading">Ask Me Anything</div></div>
-
-      <div class="chatwrap">
-        <section class="chat" id="chat"></section>
+    <!-- Main chat (right column) -->
+    <main class="chat">
+      <!-- Scrollable messages area; padded at bottom to clear composer -->
+      <div class="messages" id="messages">
+        <div class="messages__inner" id="messagesInner"></div>
       </div>
 
+      <!-- Jump to latest -->
+      <button class="jump" id="jumpBtn" type="button">Jump to latest</button>
+
+      <!-- Sticky composer -->
       <div class="composer">
-        <div class="composer-inner">
-          <div class="input">
-            <textarea id="prompt" placeholder="Message HomeRates Chat…" rows="3"></textarea>
-            <div class="hints">
-              <span class="hint">Rate strategy</span>
-              <span class="hint">Down payment options</span>
-              <span class="hint">DSCR scenarios</span>
-              <span class="hint">Seller credits</span>
-            </div>
-            <div class="button-row">
-              <button class="btn secondary" id="stopBtn" disabled>Stop</button>
-              <button class="send" id="sendBtn">Send</button>
-            </div>
-          </div>
+        <div class="composer__inner">
+          <textarea id="composerInput" class="composer__input" placeholder="Message HomeRates.ai" rows="1" spellcheck="false"></textarea>
+          <button id="sendBtn" type="button" class="composer__send">Send</button>
         </div>
+        <div class="composer__note">HomeRates.ai can make mistakes. Verify critical numbers.</div>
       </div>
     </main>
   </div>
 
   <script>
-    /* --------- Compact mode for embeds (?compact=1) --------- */
-    (function () {
-      const p = new URLSearchParams(location.search);
-      if (p.get('compact') === '1') document.documentElement.classList.add('compact');
-    })();
+    const messagesEl = document.getElementById('messages');
+    const messagesInnerEl = document.getElementById('messagesInner');
+    const inputEl = document.getElementById('composerInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const jumpBtn = document.getElementById('jumpBtn');
 
-    /* --------- Markdown setup --------- */
-    marked.setOptions({
-      breaks: true,
-      gfm: true,
-      highlight: (code, lang) => {
-        try { return hljs.highlight(code, { language: lang }).value; }
-        catch { return hljs.highlightAuto(code).value; }
+    let atBottom = true;
+    const messages = [
+      { role: 'assistant', content: 'Welcome to HomeRates.ai — ask anything about buying, refinancing, or strategy. I\'ll keep it plain and useful.' },
+      { role: 'user', content: 'What\'s the difference between a 2/1 buydown and a price cut?' },
+      { role: 'assistant', content: 'Short version: a 2/1 targets payment timing without lowering basis; price cuts lower basis. Want numbers on your range?' },
+    ];
+
+    function el(tag, cls, text) {
+      const node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text != null) node.textContent = text;
+      return node;
+    }
+
+    function renderMessages() {
+      messagesInnerEl.innerHTML = '';
+      for (const m of messages) {
+        const row = el('div', 'msgRow');
+        const avatar = el('div', 'avatar ' + (m.role === 'assistant' ? 'avatar--assistant' : 'avatar--user'));
+        const bubble = el('div', 'bubble ' + (m.role === 'assistant' ? 'bubble--assistant' : 'bubble--user'));
+        bubble.textContent = m.content;
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+        messagesInnerEl.appendChild(row);
+      }
+      if (atBottom) scrollToBottom(false);
+    }
+
+    function scrollToBottom(smooth = true) {
+      const behavior = smooth ? 'smooth' : 'auto';
+      messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior });
+    }
+
+    function updateJump() {
+      jumpBtn.classList.toggle('show', !atBottom);
+    }
+
+    messagesEl.addEventListener('scroll', () => {
+      const tol = 24;
+      atBottom = (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < tol;
+      updateJump();
+    });
+
+    jumpBtn.addEventListener('click', () => scrollToBottom(true));
+
+    function autosize() {
+      inputEl.style.height = 'auto';
+      const line = 24; // approx line-height
+      const max = line * 6 + 12; // up to ~6 lines
+      inputEl.style.height = Math.min(inputEl.scrollHeight, max) + 'px';
+    }
+    inputEl.addEventListener('input', autosize);
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
       }
     });
 
-    /* --------- Local store --------- */
-    const store = {
-      key: 'hr_convos_v2',
-      load() { try { return JSON.parse(localStorage.getItem(this.key)) || {}; } catch { return {}; } },
-      save(d) { localStorage.setItem(this.key, JSON.stringify(d)); }
-    };
+    sendBtn.addEventListener('click', handleSend);
 
-    /* --------- State --------- */
-    let data = store.load();
-    if (!data.convos) data.convos = {};
-    if (!data.activeId) newConversation('New chat');
-    let aborter = null;
-
-    /* --------- Elements --------- */
-    const chatEl = document.getElementById('chat');
-    const convListEl = document.getElementById('convList');
-    const promptEl = document.getElementById('prompt');
-    const sendBtn = document.getElementById('sendBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const searchEl = document.getElementById('searchConv');
-
-    /* --------- Conversation helpers --------- */
-    function newConversation(title = 'New chat') {
-      const id = 'c_' + Math.random().toString(36).slice(2, 10);
-      data.convos[id] = { id, title, createdAt: Date.now(), msgs: [] };
-      data.activeId = id; store.save(data);
-      renderSidebar(); renderChat();
-      return id;
-    }
-
-    function deleteConversation(id) {
-      if (!data.convos[id]) return;
-      delete data.convos[id];
-      const first = Object.keys(data.convos)[0];
-      data.activeId = first || newConversation();
-      store.save(data);
-      renderSidebar(); renderChat();
-    }
-
-    function renameConversation(id, title) {
-      if (!data.convos[id]) return;
-      data.convos[id].title = title || 'Untitled';
-      store.save(data); renderSidebar();
-    }
-
-    function active() { return data.convos[data.activeId]; }
-
-    /* --------- Sidebar render --------- */
-    function renderSidebar() {
-      convListEl.innerHTML = '';
-      const term = (searchEl.value || '').toLowerCase();
-      const list = Object.values(data.convos).sort((a,b)=>b.createdAt-a.createdAt)
-        .filter(c => !term || (c.title || '').toLowerCase().includes(term));
-      if (!list.length) {
-        const empty = document.createElement('div');
-        empty.className = 'conv';
-        empty.innerHTML = `<div class="conv-title">No conversations</div><div class="conv-meta">Start a new one</div>`;
-        convListEl.appendChild(empty);
-        return;
-      }
-      list.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'conv' + (c.id === data.activeId ? ' active' : '');
-        el.onclick = () => { data.activeId = c.id; store.save(data); renderSidebar(); renderChat(); closeSidebar(); };
-        const title = c.title || 'Untitled';
-        const when = new Date(c.createdAt).toLocaleString();
-        el.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
-            <div class="conv-title" title="${title}">${title}</div>
-            <div class="conv-ops">
-              <span class="chip" onclick="event.stopPropagation(); quickRename('${c.id}')">Rename</span>
-              <span class="chip" style="color:#ef4444;border-color:#3a3a3a" onclick="event.stopPropagation(); confirm('Delete conversation?') && deleteConversation('${c.id}')">Delete</span>
-            </div>
-          </div>
-          <div class="conv-meta">${when}</div>`;
-        convListEl.appendChild(el);
-      });
-    }
-    window.quickRename = function(id){
-      const t = prompt('New title:', data.convos[id]?.title || '');
-      if (t !== null) renameConversation(id, t.trim());
-    };
-
-    /* --------- Chat render --------- */
-    function renderChat() {
-      chatEl.innerHTML = '';
-      const c = active(); if (!c) return;
-
-      if (!c.msgs.length) {
-        const intro = document.createElement('div');
-        intro.className = 'msg';
-        intro.innerHTML = `
-          <div class="role">Assistant</div>
-          <div class="content">
-            Ask me anything about mortgages, rates, DSCR, seller credits, or first-time buyer programs.
-          </div>`;
-        chatEl.appendChild(intro);
-      } else {
-        c.msgs.forEach((m, i) => chatEl.appendChild(renderMessage(m, i)));
-      }
-      chatEl.scrollTop = chatEl.scrollHeight;
-      queueHeightPing();
-    }
-
-    function renderMessage(m, idx) {
-      const el = document.createElement('div');
-      el.className = 'msg ' + (m.role === 'user' ? 'user' : 'assistant');
-      const html = (m.role === 'assistant')
-        ? marked.parse(m.content || '')
-        : escapeHtml(m.content || '').replace(/\n/g,'<br>');
-
-      el.innerHTML = `
-        <div class="role">${m.role === 'user' ? 'You' : 'Assistant'}</div>
-        <div class="content">${html || '<span class="typing">▌</span>'}</div>
-        <div class="ops">
-          ${m.role === 'assistant' ? '<span class="op" onclick="copyText(this)">Copy</span>' : ''}
-          ${idx === active().msgs.length - 1 ? '<span class="op" onclick="removeLast()">Undo</span>' : ''}
-        </div>
-      `;
-      // add copy buttons to code blocks
-      setTimeout(() => enhanceCodeBlocks(el), 0);
-      return el;
-    }
-
-    function enhanceCodeBlocks(scope) {
-      scope.querySelectorAll('pre code').forEach(block => {
-        const pre = block.closest('pre');
-        if (pre.dataset.enhanced) return;
-        pre.dataset.enhanced = '1';
-        const lang = (block.className || '').replace('language-','') || 'code';
-        const bar = document.createElement('div');
-        bar.className = 'codebar';
-        bar.innerHTML = `<span>${lang}</span><button class="copybtn" onclick="copyBlock(this)">Copy</button>`;
-        pre.parentNode.insertBefore(bar, pre);
-      });
-    }
-
-    window.copyBlock = function(btn){
-      const pre = btn.parentNode.nextElementSibling;
-      const text = pre ? pre.textContent : '';
-      navigator.clipboard.writeText(text).then(() => { btn.textContent = 'Copied'; setTimeout(()=>btn.textContent='Copy',1200); });
-    };
-    window.copyText = function(btn){
-      const msg = btn.closest('.msg').querySelector('.content').innerText;
-      navigator.clipboard.writeText(msg).then(() => { btn.textContent = 'Copied'; setTimeout(()=>btn.textContent='Copy',1200); });
-    };
-    window.removeLast = function(){
-      const c = active(); if (!c?.msgs?.length) return;
-      c.msgs.pop(); store.save(data); renderChat();
-    };
-
-    function escapeHtml(s){return s.replace(/[&<>"'`]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[ch]||ch))}
-
-    /* --------- Send / Stop / Regenerate --------- */
-    sendBtn.addEventListener('click', onSend);
-    promptEl.addEventListener('keydown', e => { if ((e.metaKey||e.ctrlKey) && e.key === 'Enter') onSend(); });
-    document.querySelectorAll('.hint').forEach(h => h.addEventListener('click', () => { promptEl.value = h.textContent; promptEl.focus(); }));
-
-    async function onSend(regenerate=false){
-      const c = active(); if (!c) return;
-      let text = promptEl.value.trim();
-      if (regenerate && c.msgs.length) {
-        // remove last assistant message and resend
-        const last = c.msgs[c.msgs.length-1];
-        if (last?.role === 'assistant') c.msgs.pop();
-        text = c.msgs[c.msgs.length-1]?.content || text;
-      }
+    async function handleSend() {
+      const text = inputEl.value.trim();
       if (!text) return;
+      inputEl.value = '';
+      autosize();
+      sendBtn.disabled = true;
 
-      // push user message if new
-      if (!regenerate) {
-        c.msgs.push({ role:'user', content:text });
-      }
-      promptEl.value = '';
-      renderChat();
-      sendBtn.disabled = true; stopBtn.disabled = false;
+      // Add user message
+      messages.push({ role: 'user', content: text });
+      renderMessages();
 
-      // placeholder assistant "typing"
-      c.msgs.push({ role:'assistant', content:'' });
-      renderChat();
+      // Add assistant placeholder
+      const placeholder = { role: 'assistant', content: '' };
+      messages.push(placeholder);
+      renderMessages();
 
       try {
-        aborter = new AbortController();
-        const reply = await callYourAPI(c.msgs, aborter.signal);
-        c.msgs[c.msgs.length-1].content = reply || '(No content)';
-        if (!c.title || c.title === 'New chat') c.title = (c.msgs.find(m=>m.role==='user')?.content || 'New chat').slice(0, 60);
-      } catch (e) {
-        c.msgs[c.msgs.length-1].content = 'Sorry—something went wrong.';
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        const reply = data && data.reply ? data.reply : 'I hit a snag. Try again.';
+
+        // Fake typing effect
+        await typeIntoPlaceholder(placeholder, reply);
+      } catch (err) {
+        placeholder.content = 'Network hiccup. Mind sending that again?';
+        renderMessages();
       } finally {
-        aborter = null;
-        sendBtn.disabled = false; stopBtn.disabled = true;
-        store.save(data); renderChat();
+        sendBtn.disabled = false;
+        scrollToBottom(true);
       }
     }
 
-    stopBtn.addEventListener('click', () => {
-      if (aborter) aborter.abort();
-      stopBtn.disabled = true; sendBtn.disabled = false;
-    });
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-    document.getElementById('newChatBtn').onclick = () => { newConversation(); closeSidebar(); };
-    document.getElementById('exportBtn').onclick = () => exportConversation();
-    searchEl.addEventListener('input', renderSidebar);
-
-    function exportConversation(){
-      const c = active(); if (!c) return;
-      const blob = new Blob([JSON.stringify(c, null, 2)], {type:'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = (c.title || 'conversation') + '.json';
-      a.click();
-      URL.revokeObjectURL(a.href);
+    async function typeIntoPlaceholder(placeholder, text) {
+      placeholder.content = '';
+      for (let i = 0; i <= text.length; i++) {
+        placeholder.content = text.slice(0, i);
+        renderMessages();
+        await delay(5);
+      }
     }
 
-    /* --------- Backend call (Vercel serverless) --------- */
-    async function callYourAPI(messages, signal){
-      const res = await fetch('/api/chat', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ messages }),
-        signal
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      return data.reply || '';
-    }
-
-    /* --------- Sidebar mobile behavior --------- */
-    const sidebar = document.getElementById('sidebar');
-    const scrim = document.getElementById('scrim');
-    const openSidebarBtn = document.getElementById('openSidebar');
-    function openSidebar(show=true){ sidebar.classList.toggle('open',show); scrim.classList.toggle('show',show); }
-    function closeSidebar(){ openSidebar(false); }
-    if (openSidebarBtn) openSidebarBtn.onclick = () => openSidebar(true);
-    if (scrim) scrim.onclick = closeSidebar;
-
-    /* --------- Initial render --------- */
-    renderSidebar(); renderChat();
-
-    /* --------- iFrame auto-height for WP embed --------- */
-    let pingQueued = false;
-    function pingHeight(){
-      const h = document.documentElement.scrollHeight;
-      try { parent.postMessage({ type:'hr-iframe-height', height:h }, '*'); } catch {}
-      pingQueued = false;
-    }
-    function queueHeightPing(){ if (pingQueued) return; pingQueued = true; requestAnimationFrame(pingHeight); }
-    const ro = new ResizeObserver(queueHeightPing);
-    ro.observe(document.documentElement);
-    window.addEventListener('load', queueHeightPing);
+    // Initial paint
+    renderMessages();
+    autosize();
   </script>
 </body>
 </html>
+
+
+/* api/chat.js — Vercel Serverless Function (Node.js) */
+// Place this file in a lower-case folder named `api` at the repo root:
+// /api/chat.js  → available at https://chat.homerates.ai/api/chat
+
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method Not Allowed' });
+    return;
+  }
+
+  try {
+    const { message } = req.body || {};
+    if (!message || typeof message !== 'string') {
+      res.status(400).json({ error: 'Missing `message` in body' });
+      return;
+    }
+
+    // TODO: Replace this with your real model call.
+    // For now, a simple canned reply that keeps the flow moving.
+    const reply = `Got it. Give me a target price, your down payment, and time horizon — I\'ll map the trade-offs and where the math starts working in your favor.`;
+
+    res.status(200).json({ reply });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
