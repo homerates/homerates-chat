@@ -1,88 +1,32 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>HomeRates Chat</title>
-  <!-- Version: hr-chat-external-js-v2 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HomeRates.ai — Ask Me Anything</title>
   <style>
-    * { box-sizing: border-box; } html, body { height: 100%; }
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color:#111; background:#f5f5f5; }
-    :root { --border:#e6e6e6; --muted:#6b7280; --bg:#fff; --bg-subtle:rgba(255,255,255,.85); --shadow:0 1px 2px rgba(0,0,0,.04); --assistant:#fff; --assistant-border:#e5e7eb; --user:#111; --user-text:#fff; }
-    .app { display:flex; height:100dvh; width:100%; overflow:hidden; }
-    .sidebar { width:288px; background:var(--bg); border-right:1px solid var(--border); display:flex; flex-direction:column; }
-    .sidebar__header { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); }
-    .badge { width:20px; height:20px; border-radius:50%; background:#111; } .brand { font-weight:600; }
-    .sidebar__sectionLabel { padding:12px; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
-    .sidebar__nav { padding:0 8px 8px; display:grid; gap:6px; }
-    .sidebar__item { text-align:left; padding:10px 12px; border-radius:10px; border:1px solid transparent; background:transparent; cursor:pointer; font-size:14px; color:#111; text-decoration:none; }
-    .sidebar__item:hover { background:#f3f4f6; }
-    .sidebar__footer { margin-top:auto; padding:10px 12px; font-size:12px; color:var(--muted); border-top:1px solid var(--border); }
-    .chat { position:relative; flex:1; background:#fafafa; }
-    .messages { position:absolute; inset:0 0 calc(80px + env(safe-area-inset-bottom)) 0; overflow-y:auto; padding:8px 12px; }
-    .messages__inner { max-width:768px; margin:0 auto; padding:6px 6px 24px; }
-    .msgRow { display:flex; gap:12px; padding:10px 0; align-items:flex-start; }
-    .avatar { width:28px; height:28px; border-radius:50%; margin-top:2px; flex:0 0 auto; }
-    .avatar--assistant { background:#111; } .avatar--user { background:#d1d5db; }
-    .bubble { max-width:85%; padding:12px 14px; border-radius:16px; box-shadow:var(--shadow); font-size:15px; line-height:1.5; white-space:pre-wrap; }
-    .bubble--assistant { background:var(--assistant); border:1px solid var(--assistant-border); }
-    .bubble--user { background:var(--user); color:var(--user-text); margin-left:auto; }
-    .jump { position:absolute; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); border:1px solid var(--border); background:var(--bg-subtle); padding:6px 10px; border-radius:999px; font-size:13px; box-shadow:var(--shadow); display:none; }
-    .jump.show { display:inline-block; } .jump:hover { background:#fff; }
-    .composer { position:absolute; left:0; right:0; bottom:0; border-top:1px solid var(--border); background:var(--bg-subtle); backdrop-filter:saturate(1.1) blur(6px); }
-    .composer__inner { max-width:768px; margin:10px auto 2px; display:flex; align-items:flex-end; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:16px; background:#fff; box-shadow:var(--shadow); }
-    .composer__input { flex:1; min-height:40px; max-height:168px; border:none; outline:none; resize:none; padding:8px 10px; font-size:15px; line-height:24px; background:transparent; }
-    .composer__send { border:1px solid var(--border); background:#f3f4f6; border-radius:12px; padding:8px 12px; font-size:14px; color:#6b7280; cursor:pointer; }
-    .composer__send--ready { background:#111; color:#fff; border-color:#111; }
-    .composer__note { max-width:768px; margin:4px auto 10px; padding:0 10px; font-size:11px; color:var(--muted); }
-    @media (max-width:1024px){ .sidebar{ display:none; } }
-
-    /* Tiny error banner if JS can't init */
-    .err { position:fixed; left:12px; bottom:12px; right:12px; background:#fff3f3; color:#b10000; border:1px solid #ffcccc; border-radius:8px; padding:10px 12px; font: 13px/1.35 system-ui; display:none; }
-    .err.show { display:block; }
+    body { margin:0; font-family:sans-serif; background:#0b0b0c; color:#fff; }
+    .wrap { display:flex; flex-direction:column; min-height:100vh; }
+    header { padding:12px 16px; border-bottom:1px solid #2a2a2e; }
+    .thread { flex:1; padding:16px; overflow-y:auto; }
+    .msg { margin-bottom:10px; }
+    .bubble { padding:8px 12px; border-radius:8px; }
+    .user .bubble { background:#101014; }
+    .assistant .bubble { background:#1b1b1f; }
+    .composer { display:flex; gap:8px; padding:12px; border-top:1px solid #2a2a2e; }
+    textarea { flex:1; resize:none; min-height:44px; border-radius:8px; padding:8px; background:#111; color:#fff; border:1px solid #2a2a2e; }
+    button { padding:0 16px; border-radius:8px; background:#1c1c22; color:#fff; border:1px solid #2a2a2e; }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="sidebar__header"><div class="badge" aria-hidden="true"></div><div class="brand">HomeRates.ai</div></div>
-      <div class="sidebar__sectionLabel">Conversations</div>
-      <nav class="sidebar__nav"><button class="sidebar__item" id="newChatBtn" type="button">New chat</button></nav>
-      <div class="sidebar__sectionLabel">Quick links</div>
-      <nav class="sidebar__nav">
-        <a class="sidebar__item" href="/">Ask Anything</a>
-        <a class="sidebar__item" href="https://homerates.ai/knowledge">Knowledge Hub</a>
-        <a class="sidebar__item" href="https://homerates.ai/market-news">Market News</a>
-      </nav>
-      <div class="sidebar__footer">NMLS #366082 · CA Only</div>
-    </aside>
-
-    <main class="chat">
-      <div class="messages" id="messages">
-        <div class="messages__inner" id="messagesInner">
-          <!-- Static fallback message so the page never looks empty -->
-          <div class="msgRow">
-            <div class="avatar avatar--assistant" aria-hidden="true"></div>
-            <div class="bubble bubble--assistant">
-              Welcome to HomeRates.ai — ask anything about buying, refinancing, or strategy. I’ll keep it plain and useful.
-            </div>
-          </div>
-        </div>
-      </div>
-      <button class="jump" id="jumpBtn" type="button">Jump to latest</button>
-      <div class="composer">
-        <div class="composer__inner">
-          <textarea id="composerInput" class="composer__input" placeholder="Message HomeRates.ai" rows="1" spellcheck="false"></textarea>
-          <button id="sendBtn" type="button" class="composer__send">Send</button>
-        </div>
-        <div class="composer__note">HomeRates.ai can make mistakes. Verify critical numbers.</div>
-      </div>
-    </main>
+  <div class="wrap">
+    <header><strong>HomeRates.ai • Ask Me Anything</strong></header>
+    <div id="thread" class="thread"></div>
+    <form id="composer" class="composer">
+      <textarea id="input" placeholder="Ask about CA mortgages…"></textarea>
+      <button id="send" type="submit">Send</button>
+    </form>
   </div>
-
-  <div id="err" class="err">Couldn’t initialize chat logic. If this keeps showing, make sure <strong>main.js</strong> exists next to <strong>index.html</strong> and is loading (no 404).</div>
-
-  <!-- Load logic externally (CSP-safe). Use relative path and cache-busting. -->
-  <script src="./main.js?v=ext2" defer></script>
+  <script src="/main.js" defer></script>
 </body>
 </html>
