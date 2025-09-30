@@ -4,28 +4,65 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HomeRates.ai — Ask Me Anything</title>
+  <meta name="description" content="AI-powered mortgage clarity for CA buyers, owners, and investors." />
   <style>
-    body { margin:0; font-family:sans-serif; background:#0b0b0c; color:#fff; }
-    .wrap { display:flex; flex-direction:column; min-height:100vh; }
-    header { padding:12px 16px; border-bottom:1px solid #2a2a2e; }
-    .thread { flex:1; padding:16px; overflow-y:auto; }
-    .msg { margin-bottom:10px; }
-    .bubble { padding:8px 12px; border-radius:8px; }
-    .user .bubble { background:#101014; }
-    .assistant .bubble { background:#1b1b1f; }
-    .composer { display:flex; gap:8px; padding:12px; border-top:1px solid #2a2a2e; }
-    textarea { flex:1; resize:none; min-height:44px; border-radius:8px; padding:8px; background:#111; color:#fff; border:1px solid #2a2a2e; }
-    button { padding:0 16px; border-radius:8px; background:#1c1c22; color:#fff; border:1px solid #2a2a2e; }
+    :root {
+      --bg:#0b0b0c; --panel:#151517; --text:#fff; --muted:#d1d1d6; --subtle:#a6a6ad;
+      --border:#2a2a2e; --accent:#39d98a; --radius:12px; --maxw:980px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
+    a{color:var(--muted)}
+    .wrap{min-height:100%;display:flex;flex-direction:column}
+    header{border-bottom:1px solid var(--border);position:sticky;top:0;backdrop-filter:blur(8px);background:#0b0b0ccc;z-index:10}
+    .bar{margin:0 auto;max-width:var(--maxw);padding:14px 16px;display:flex;gap:12px;align-items:center}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+    .title{font-weight:600}
+    main{flex:1}
+    .container{margin:0 auto;max-width:var(--maxw);padding:16px;display:grid;grid-template-columns:1fr;gap:14px}
+    .thread{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;min-height:55vh;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+    .msg{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+    .who{width:28px;height:28px;border-radius:8px;background:#222227;display:grid;place-items:center;font-size:12px;color:var(--subtle);border:1px solid var(--border)}
+    .bubble{background:#1b1b1f;border:1px solid var(--border);border-radius:10px;padding:10px 12px;white-space:pre-wrap;line-height:1.45}
+    .user .bubble{background:#101014}
+    .side{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:10px}
+    .pill{background:#0f0f12;border:1px solid var(--border);border-radius:999px;padding:8px 12px;font-size:12px;color:var(--subtle);display:inline-block}
+    .kicker{font-size:13px;color:var(--muted)}
+    .composer-wrap{position:sticky;bottom:0;border-top:1px solid var(--border);background:#0b0b0ccc;z-index:10}
+    .composer{margin:0 auto;max-width:var(--maxw);display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 16px}
+    textarea{width:100%;resize:none;min-height:44px;max-height:180px;padding:12px;border-radius:10px;background:#111113;color:var(--text);border:1px solid var(--border);outline:none;line-height:1.35}
+    button{padding:0 16px;min-width:84px;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:#1c1c22;color:var(--text);font-weight:600;height:44px}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    @media (min-width:980px){ .container{grid-template-columns:2fr 1fr} }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header><strong>HomeRates.ai • Ask Me Anything</strong></header>
-    <div id="thread" class="thread"></div>
-    <form id="composer" class="composer">
-      <textarea id="input" placeholder="Ask about CA mortgages…"></textarea>
-      <button id="send" type="submit">Send</button>
-    </form>
+    <header>
+      <div class="bar">
+        <div class="dot"></div>
+        <div class="title">HomeRates.ai • Ask Me Anything</div>
+        <div style="flex:1"></div>
+        <div class="kicker">California mortgage guidance • NMLS #366082</div>
+      </div>
+    </header>
+    <main>
+      <div class="container">
+        <section class="thread" id="thread" aria-live="polite"></section>
+        <aside class="side">
+          <div class="pill">Tips</div>
+          <div class="kicker">Ask about rates, seller credits vs price cuts, Access Zero DPA, DSCR, Jumbo Advantage, or qualification math.</div>
+          <div class="pill">Disclosure</div>
+          <div class="kicker">Educational content only, not a commitment to lend. CA eligibility. Programs/terms change.</div>
+        </aside>
+      </div>
+    </main>
+    <div class="composer-wrap">
+      <form id="composer" class="composer">
+        <textarea id="input" placeholder="Ask anything about rates, programs, or qualification…"></textarea>
+        <button id="send" type="submit">Send</button>
+      </form>
+    </div>
   </div>
   <script src="/main.js" defer></script>
 </body>
