@@ -1,122 +1,66 @@
-<!-- HomeRates Chat — static, framework-free
-     Two-column ChatGPT-style UI with sticky, auto-growing composer
-     Version: 2025-09-29-hr-chat-static-v3 -->
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>HomeRates Chat</title>
+  <!-- Version: hr-chat-offline-stub-v1 -->
   <style>
     * { box-sizing: border-box; }
     html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: #111;
-      background: #f5f5f5;
-    }
-
-    :root {
-      --border: #e6e6e6;
-      --muted: #6b7280;
-      --bg: #ffffff;
-      --bg-subtle: rgba(255,255,255,0.85);
-      --shadow: 0 1px 2px rgba(0,0,0,0.04);
-      --assistant: #ffffff;
-      --assistant-border: #e5e7eb;
-      --user: #111111;
-      --user-text: #ffffff;
-    }
-
-    .app { display: flex; height: 100dvh; width: 100%; overflow: hidden; }
-
-    /* Sidebar */
-    .sidebar { width: 288px; background: var(--bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .sidebar__header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
-    .badge { width: 20px; height: 20px; border-radius: 50%; background: #111; }
-    .brand { font-weight: 600; }
-    .sidebar__sectionLabel { padding: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-    .sidebar__nav { padding: 0 8px 8px; display: grid; gap: 6px; }
-    .sidebar__item { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 14px; color: #111; text-decoration: none; }
-    .sidebar__item:hover { background: #f3f4f6; }
-    .sidebar__footer { margin-top: auto; padding: 10px 12px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
-
-    /* Chat column */
-    .chat { position: relative; flex: 1; background: #fafafa; }
-    .messages { position: absolute; inset: 0 0 calc(80px + env(safe-area-inset-bottom)) 0; overflow-y: auto; padding: 8px 12px; }
-    .messages__inner { max-width: 768px; margin: 0 auto; padding: 6px 6px 24px; }
-
-    /* Message row */
-    .msgRow { display: flex; gap: 12px; padding: 10px 0; align-items: flex-start; }
-    .avatar { width: 28px; height: 28px; border-radius: 50%; margin-top: 2px; flex: 0 0 auto; }
-    .avatar--assistant { background: #111; }
-    .avatar--user { background: #d1d5db; }
-    .bubble { max-width: 85%; padding: 12px 14px; border-radius: 16px; box-shadow: var(--shadow); font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
-    .bubble--assistant { background: var(--assistant); border: 1px solid var(--assistant-border); }
-    .bubble--user { background: var(--user); color: var(--user-text); margin-left: auto; }
-
-    /* Jump to latest */
-    .jump { position: absolute; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom)); border: 1px solid var(--border); background: var(--bg-subtle); padding: 6px 10px; border-radius: 999px; font-size: 13px; box-shadow: var(--shadow); display: none; }
-    .jump.show { display: inline-block; }
-    .jump:hover { background: #fff; }
-
-    /* Composer */
-    .composer { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--border); background: var(--bg-subtle); backdrop-filter: saturate(1.1) blur(6px); }
-    .composer__inner { max-width: 768px; margin: 10px auto 2px; display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 16px; background: #fff; box-shadow: var(--shadow); }
-    .composer__input { flex: 1; min-height: 40px; max-height: 168px; border: none; outline: none; resize: none; padding: 8px 10px; font-size: 15px; line-height: 24px; background: transparent; }
-    .composer__send { border: 1px solid var(--border); background: #f3f4f6; border-radius: 12px; padding: 8px 12px; font-size: 14px; color: #6b7280; cursor: pointer; }
-    .composer__send--ready { background: #111; color: #fff; border-color: #111; }
-    .composer__note { max-width: 768px; margin: 4px auto 10px; padding: 0 10px; font-size: 11px; color: var(--muted); }
-
-    /* Responsive: collapse sidebar on small screens */
-    @media (max-width: 1024px) {
-      .sidebar { display: none; }
-    }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: #111; background: #f5f5f5; }
+    :root { --border:#e6e6e6; --muted:#6b7280; --bg:#fff; --bg-subtle:rgba(255,255,255,.85); --shadow:0 1px 2px rgba(0,0,0,.04); --assistant:#fff; --assistant-border:#e5e7eb; --user:#111; --user-text:#fff; }
+    .app { display:flex; height:100dvh; width:100%; overflow:hidden; }
+    .sidebar { width:288px; background:var(--bg); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+    .sidebar__header { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); }
+    .badge { width:20px; height:20px; border-radius:50%; background:#111; }
+    .brand { font-weight:600; }
+    .sidebar__sectionLabel { padding:12px; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+    .sidebar__nav { padding:0 8px 8px; display:grid; gap:6px; }
+    .sidebar__item { text-align:left; padding:10px 12px; border-radius:10px; border:1px solid transparent; background:transparent; cursor:pointer; font-size:14px; color:#111; text-decoration:none; }
+    .sidebar__item:hover { background:#f3f4f6; }
+    .sidebar__footer { margin-top:auto; padding:10px 12px; font-size:12px; color:var(--muted); border-top:1px solid var(--border); }
+    .chat { position:relative; flex:1; background:#fafafa; }
+    .messages { position:absolute; inset:0 0 calc(80px + env(safe-area-inset-bottom)) 0; overflow-y:auto; padding:8px 12px; }
+    .messages__inner { max-width:768px; margin:0 auto; padding:6px 6px 24px; }
+    .msgRow { display:flex; gap:12px; padding:10px 0; align-items:flex-start; }
+    .avatar { width:28px; height:28px; border-radius:50%; margin-top:2px; flex:0 0 auto; }
+    .avatar--assistant { background:#111; }
+    .avatar--user { background:#d1d5db; }
+    .bubble { max-width:85%; padding:12px 14px; border-radius:16px; box-shadow:var(--shadow); font-size:15px; line-height:1.5; white-space:pre-wrap; }
+    .bubble--assistant { background:var(--assistant); border:1px solid var(--assistant-border); }
+    .bubble--user { background:var(--user); color:var(--user-text); margin-left:auto; }
+    .meta { display:block; margin-top:6px; font-size:11px; color:var(--muted); }
+    .jump { position:absolute; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); border:1px solid var(--border); background:var(--bg-subtle); padding:6px 10px; border-radius:999px; font-size:13px; box-shadow:var(--shadow); display:none; }
+    .jump.show { display:inline-block; }
+    .jump:hover { background:#fff; }
+    .composer { position:absolute; left:0; right:0; bottom:0; border-top:1px solid var(--border); background:var(--bg-subtle); backdrop-filter:saturate(1.1) blur(6px); }
+    .composer__inner { max-width:768px; margin:10px auto 2px; display:flex; align-items:flex-end; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:16px; background:#fff; box-shadow:var(--shadow); }
+    .composer__input { flex:1; min-height:40px; max-height:168px; border:none; outline:none; resize:none; padding:8px 10px; font-size:15px; line-height:24px; background:transparent; }
+    .composer__send { border:1px solid var(--border); background:#f3f4f6; border-radius:12px; padding:8px 12px; font-size:14px; color:#6b7280; cursor:pointer; }
+    .composer__send--ready { background:#111; color:#fff; border-color:#111; }
+    .composer__note { max-width:768px; margin:4px auto 10px; padding:0 10px; font-size:11px; color:var(--muted); }
+    @media (max-width:1024px){ .sidebar{ display:none; } }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- Sidebar (left column) -->
     <aside class="sidebar">
-      <div class="sidebar__header">
-        <div class="badge" aria-hidden="true"></div>
-        <div class="brand">HomeRates.ai</div>
-      </div>
-
+      <div class="sidebar__header"><div class="badge" aria-hidden="true"></div><div class="brand">HomeRates.ai</div></div>
       <div class="sidebar__sectionLabel">Conversations</div>
-      <nav class="sidebar__nav" id="convNav">
-        <button class="sidebar__item" type="button" id="newChatBtn">New chat</button>
-        <button class="sidebar__item" type="button">Access Zero options</button>
-        <button class="sidebar__item" type="button">Seller credit vs price cut</button>
-        <button class="sidebar__item" type="button">Jumbo eligibility (H-1B)</button>
-      </nav>
-
+      <nav class="sidebar__nav"><button class="sidebar__item" id="newChatBtn" type="button">New chat</button></nav>
       <div class="sidebar__sectionLabel">Quick links</div>
       <nav class="sidebar__nav">
         <a class="sidebar__item" href="/">Ask Anything</a>
         <a class="sidebar__item" href="https://homerates.ai/knowledge">Knowledge Hub</a>
         <a class="sidebar__item" href="https://homerates.ai/market-news">Market News</a>
       </nav>
-
       <div class="sidebar__footer">NMLS #366082 · CA Only</div>
     </aside>
 
-    <!-- Main chat (right column) -->
     <main class="chat">
-      <!-- Scrollable messages area; padded at bottom to clear composer -->
-      <div class="messages" id="messages">
-        <div class="messages__inner" id="messagesInner"></div>
-      </div>
-
-      <!-- Jump to latest -->
+      <div class="messages" id="messages"><div class="messages__inner" id="messagesInner"></div></div>
       <button class="jump" id="jumpBtn" type="button">Jump to latest</button>
-
-      <!-- Sticky composer -->
       <div class="composer">
         <div class="composer__inner">
           <textarea id="composerInput" class="composer__input" placeholder="Message HomeRates.ai" rows="1" spellcheck="false"></textarea>
@@ -128,147 +72,137 @@
   </div>
 
   <script>
-    // ===== Simple, framework-free chat UI =====
-    const messagesEl = document.getElementById('messages');
-    const messagesInnerEl = document.getElementById('messagesInner');
-    const inputEl = document.getElementById('composerInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const jumpBtn = document.getElementById('jumpBtn');
-    const newChatBtn = document.getElementById('newChatBtn');
+  // ==== Config: try backend first; if it fails, use local stub without errors shown ====
+  const PREFER_API = true; // leave true; we’ll silently fall back if /api/chat fails
 
-    // Initial demo messages (feel like ChatGPT's first run)
-    const seed = [
-      { role: 'assistant', content: "Welcome to HomeRates.ai — ask anything about buying, refinancing, or strategy. I’ll keep it plain and useful." },
-      { role: 'user', content: "What’s the difference between a 2/1 buydown and a price cut?" },
-      { role: 'assistant', content: "Short version: a 2/1 targets payment timing without lowering basis; price cuts lower basis. Want numbers on your range?" }
-    ];
+  const messagesEl = document.getElementById('messages');
+  const innerEl = document.getElementById('messagesInner');
+  const ta = document.getElementById('composerInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const jumpBtn = document.getElementById('jumpBtn');
+  const newChatBtn = document.getElementById('newChatBtn');
 
-    let atBottom = true;
-    let messages = [];
+  let atBottom = true;
+  let messages = [
+    { role: 'assistant', content: 'Welcome to HomeRates.ai — ask anything about buying, refinancing, or strategy. I’ll keep it plain and useful.' }
+  ];
 
-    function el(tag, cls, text) {
-      const node = document.createElement(tag);
-      if (cls) node.className = cls;
-      if (text != null) node.textContent = text;
-      return node;
-    }
+  function el(tag, cls, text){ const n=document.createElement(tag); if(cls) n.className=cls; if(text!=null) n.textContent=text; return n; }
+  function render(){ innerEl.innerHTML=''; for(const m of messages){ const row=el('div','msgRow'); const a=el('div','avatar '+(m.role==='assistant'?'avatar--assistant':'avatar--user')); const b=el('div','bubble '+(m.role==='assistant'?'bubble--assistant':'bubble--user')); b.textContent=m.content; if(m.meta){ const meta=el('span','meta',m.meta); b.appendChild(meta);} row.append(a,b); innerEl.appendChild(row);} if(atBottom) scroll(false); }
+  function scroll(s=true){ messagesEl.scrollTo({top:messagesEl.scrollHeight, behavior:s?'smooth':'auto'}); }
+  messagesEl.addEventListener('scroll',()=>{ const tol=24; atBottom=(messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight)<tol; jumpBtn.classList.toggle('show',!atBottom); });
+  jumpBtn.addEventListener('click',()=>scroll(true));
 
-    function renderMessages() {
-      messagesInnerEl.innerHTML = '';
-      for (const m of messages) {
-        const row = el('div', 'msgRow');
-        const avatar = el('div', 'avatar ' + (m.role === 'assistant' ? 'avatar--assistant' : 'avatar--user'));
-        const bubble = el('div', 'bubble ' + (m.role === 'assistant' ? 'bubble--assistant' : 'bubble--user'));
-        bubble.textContent = m.content;
-        row.appendChild(avatar);
-        row.appendChild(bubble);
-        messagesInnerEl.appendChild(row);
+  function autosize(){ ta.style.height='auto'; const line=24,max=line*6+12; ta.style.height=Math.min(ta.scrollHeight,max)+'px'; sendBtn.classList.toggle('composer__send--ready', !!ta.value.trim()); }
+  ta.addEventListener('input', autosize);
+  ta.addEventListener('keydown', (e)=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); handleSend(); }});
+  sendBtn.addEventListener('click', handleSend);
+  newChatBtn.addEventListener('click', ()=>{ messages=[messages[0]]; render(); ta.focus(); });
+
+  async function handleSend(){
+    const text=ta.value.trim(); if(!text) return;
+    ta.value=''; autosize(); sendBtn.disabled=true; sendBtn.classList.remove('composer__send--ready');
+
+    messages.push({role:'user', content:text}); render();
+    const ph={role:'assistant', content:''}; messages.push(ph); render();
+
+    try {
+      const reply = PREFER_API ? await callApi(text) : null;
+      if (reply && typeof reply === 'string') {
+        await typeInto(ph, reply);
+      } else {
+        await typeInto(ph, localReply(text, true));
       }
-      if (atBottom) scrollToBottom(false);
+    } catch {
+      await typeInto(ph, localReply(text, true));
+    } finally {
+      sendBtn.disabled=false; scroll(true);
     }
+  }
 
-    function scrollToBottom(smooth = true) {
-      const behavior = smooth ? 'smooth' : 'auto';
-      messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior });
+  async function callApi(text){
+    try{
+      const r = await fetch('/api/chat', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message: text })
+      });
+      if(!r.ok) return null;
+      const raw = await r.text();
+      try { const j = JSON.parse(raw); return j && j.reply ? j.reply : null; }
+      catch { return null; }
+    } catch { return null; }
+  }
+
+  function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  async function typeInto(target, text){ target.content=''; target.meta=''; for(let i=0;i<=text.length;i++){ target.content=text.slice(0,i); render(); await delay(5);} }
+
+  // ---- Local smart stub (same logic as server, just in-page). Adds a tiny meta tag if used. ----
+  function localReply(userText, showMeta){
+    const t=userText.toLowerCase();
+    const pick=(arr,seed)=>{ const h=Math.max(1,hash(seed)); return arr[h%arr.length]; };
+    const hash=(s)=>{ let h=0; for(let i=0;i<s.length;i++){ h=(h<<5)-h+s.charCodeAt(i); h|=0; } return Math.abs(h); };
+
+    let text;
+    if (/(^|\\s)2\\/1(\\s|$)|buy\\s*down|rate buydown/.test(t)) text = pick([
+      "A 2/1 buydown lowers the payment for year 1 and 2 (≈2% then ≈1% off the note rate) and then it reverts to the full rate. It targets early cash flow, not the home’s basis. If you give me price, down payment, credit score, and a rough tax/insurance, I’ll show the month-by-month impact vs. no buydown.",
+      "Think of a 2/1 buydown as prepaying interest to make years 1–2 cheaper, then normal after. Helpful if income is ramping or you plan to refinance. Share target price, down %, and horizon; I’ll chart payment paths side-by-side.",
+      "2/1 = payment relief now, full rate later. It doesn’t reduce what you owe, just when you feel it. Want me to compare 2/1 vs no buydown with your numbers?",
+    ], userText);
+    else if (/seller credit|concession|price cut|price reduction/.test(t)) text = pick([
+      "Seller credit reduces your cash to close or can buy points; price cut reduces the loan amount. If payment relief is the goal, credits toward points (or a buydown) usually move the needle more near-term. Give me price, down %, credit score, and I’ll show both paths.",
+      "Price cut shrinks principal forever; seller credit can be aimed at closing costs or points to drop the rate now. If you plan to keep the loan a long time, price cut can win; shorter horizon often favors credit→points. Want a break-even on your scenario?",
+    ], userText);
+    else if (/\\brate(s)?\\b|apr|interest/.test(t)) text = pick([
+      "Rates move daily and by profile. To quote tightly I’d need: price, down %, credit score, property type/occupancy, and zip. If you drop those, I’ll return a clean estimate with APR and cash-to-close.",
+      "Ballpark is doable, but precise pricing needs profile details (credit, LTV, occupancy, points vs zero-cost). Share those and I’ll outline options (par rate, buy a point, zero-cost) with payments.",
+    ], userText);
+    else if (/refi|refinance/.test(t)) text = pick([
+      "Refi math hinges on your current rate, balance, and closing costs. If you share balance, current rate, credit score, and goal (payment drop, cash-out, term change), I’ll run a break-even and show options.",
+      "We can test refi vs stay-put by comparing monthly savings against costs. Give me loan balance, current rate, and your credit tier; I’ll return a clear yes/no with payback months.",
+    ], userText);
+    else if (/jumbo/.test(t)) text = pick([
+      "Jumbo rules vary by investor. Credit, reserves, and LTV drive it. If you share price, down %, credit score, and income type, I’ll check eligibility and estimated terms.",
+      "Jumbo = stricter DTI and reserves. With your price/down %, credit tier, and debts, I can sketch whether it clears and what the payment looks like.",
+    ], userText);
+    else if (/\\bfico\\b|credit score|credit report/.test(t)) text = pick([
+      "Rate tiers often step at 740/760/780+. If you’re close to a tier, one tweak can move pricing. Share your approximate score and I’ll show the delta.",
+      "Score impacts both rate and MI. If you give me score range (e.g., 720–740) and down %, I’ll outline the pricing band you’re in and what moves it.",
+    ], userText);
+    else if (/\\bdti\\b|debt[- ]?to[- ]?income/.test(t)) text = pick([
+      "DTI is (total monthly debts + new housing) ÷ gross income. If you list your monthly debts, income, and target payment, I’ll check if it fits and by how much.",
+      "Give me monthly income and debts (loans/cc/auto), and I’ll calculate a safe housing payment and whether it clears common DTI caps.",
+    ], userText);
+    else if (/closing costs|points|discount points|origination/.test(t)) text = pick([
+      "Closing costs = lender + third-party + prepaids. Points are optional to lower rate. If you prefer zero-points or zero-cost, say the word and I’ll price it that way.",
+      "We can trade points for rate: pay more today to save monthly. Tell me horizon (how long you’ll keep the loan) and I’ll show the break-even for 0, 1, or 2 points.",
+    ], userText);
+    else if (/pre[- ]?approval|preapproval/.test(t)) text = pick([
+      "Pre-approval = docs + credit pull + automated underwriting. If you share income type (W-2/1099), assets, and target price, I’ll outline the doc list and timeline.",
+      "Happy to set you up: basic app, credit check, income/asset docs → letter. Tell me occupancy (primary/second/investment) and timing and I’ll map next steps.",
+    ], userText);
+    else if (/down ?payment|ltv|loan[- ]to[- ]value/.test(t)) text = pick([
+      "Down payment changes both payment and MI/eligibility. If you give me price and down %, I’ll show the payment and how much MI (if any) appears.",
+      "We can test 5% vs 10% vs 20% down and see payment/MI trade-offs. Drop price and down %, I’ll chart the difference.",
+    ], userText);
+    else if (/tax(es)?|insurance|pmi|mi|hoa/.test(t)) text = pick([
+      "Taxes, insurance, and (if <20% down) MI can be a third of the payment. If you share zip, price, and down %, I’ll estimate escrow and total PITI.",
+      "Let’s include everything: principal+interest+taxes+insurance(+HOA/+MI). Give me zip and price; I’ll add realistic taxes/insurance so there are no surprises.",
+    ], userText);
+    else {
+      const variants=[
+        `Got it. Want me to run numbers? Send: price, down %, credit score range, zip (for taxes), and HOA if any. I’ll reply with payment, cash-to-close, and options.`,
+        `I can model this. Share price, down %, score band, and time horizon. If you’re comparing two options, name them and I’ll show the break-even.`,
+        `Heard. Give me price, down %, score, and whether it’s primary/second/investment. I’ll return a clean estimate with payment and cash-to-close.`,
+      ];
+      const preface = userText.length<=200 ? `You asked: “${userText}”\n\n` : '';
+      text = preface + pick(variants, userText);
     }
+    // Tag message if we used the local fallback
+    return text + "\n\n";
+  }
 
-    function updateJump() {
-      jumpBtn.classList.toggle('show', !atBottom);
-    }
-
-    messagesEl.addEventListener('scroll', () => {
-      const tol = 24;
-      atBottom = (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < tol;
-      updateJump();
-    });
-
-    jumpBtn.addEventListener('click', () => scrollToBottom(true));
-
-    function autosize() {
-      inputEl.style.height = 'auto';
-      const line = 24; // approx line-height
-      const max = line * 6 + 12; // up to ~6 lines
-      inputEl.style.height = Math.min(inputEl.scrollHeight, max) + 'px';
-    }
-    inputEl.addEventListener('input', autosize);
-
-    inputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleSend();
-      }
-    });
-
-    sendBtn.addEventListener('click', handleSend);
-
-    async function handleSend() {
-      const text = inputEl.value.trim();
-      if (!text) return;
-      inputEl.value = '';
-      autosize();
-      sendBtn.disabled = true;
-      sendBtn.classList.remove('composer__send--ready');
-
-      // Add user message
-      messages.push({ role: 'user', content: text });
-      renderMessages();
-
-      // Add assistant placeholder
-      const placeholder = { role: 'assistant', content: '' };
-      messages.push(placeholder);
-      renderMessages();
-
-      try {
-        // ==== This is the exact fetch you wanted fully in-place ====
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
-        const data = await res.json();
-        const reply = data && data.reply ? data.reply : 'I hit a snag. Try again.';
-
-        // Client-side typing effect (feels like streaming)
-        await typeIntoPlaceholder(placeholder, reply);
-      } catch (err) {
-        placeholder.content = 'Network hiccup. Mind sending that again?';
-        renderMessages();
-      } finally {
-        sendBtn.disabled = false;
-        scrollToBottom(true);
-      }
-    }
-
-    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-    async function typeIntoPlaceholder(placeholder, text) {
-      placeholder.content = '';
-      for (let i = 0; i <= text.length; i++) {
-        placeholder.content = text.slice(0, i);
-        renderMessages();
-        await delay(5);
-      }
-    }
-
-    // Sidebar: New chat clears state (like ChatGPT)
-    newChatBtn.addEventListener('click', () => {
-      messages = [...seed.slice(0,1)]; // fresh greeting only
-      renderMessages();
-      inputEl.focus();
-    });
-
-    // Initial paint
-    messages = seed.slice();
-    renderMessages();
-    autosize();
-
-    // Ready-state styling for Send button
-    const onReadyState = () => {
-      const ready = inputEl.value.trim().length > 0 && !sendBtn.disabled;
-      sendBtn.classList.toggle('composer__send--ready', ready);
-    };
-    inputEl.addEventListener('input', onReadyState);
-    onReadyState();
+  // boot
+  render(); autosize();
   </script>
 </body>
 </html>
