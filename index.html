@@ -1,4 +1,4 @@
-<!-- index.html (root) — ChatGPT-style UI with NO frameworks -->
+<!-- index.html (root) — COMPLETE FILE, ready to paste. ChatGPT-style UI, no frameworks. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -117,6 +117,7 @@
   </div>
 
   <script>
+    // ===== Simple, framework-free chat UI =====
     const messagesEl = document.getElementById('messages');
     const messagesInnerEl = document.getElementById('messagesInner');
     const inputEl = document.getElementById('composerInput');
@@ -166,8 +167,6 @@
       updateJump();
     });
 
-    jumpBtn.addEventListener('click', () => scrollToBottom(true));
-
     function autosize() {
       inputEl.style.height = 'auto';
       const line = 24; // approx line-height
@@ -202,6 +201,7 @@
       renderMessages();
 
       try {
+        // ==== THIS IS THE FETCH CALL YOU ASKED TO BE INCLUDED (full context) ====
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -210,7 +210,7 @@
         const data = await res.json();
         const reply = data && data.reply ? data.reply : 'I hit a snag. Try again.';
 
-        // Fake typing effect
+        // Fake typing effect for nicer feel
         await typeIntoPlaceholder(placeholder, reply);
       } catch (err) {
         placeholder.content = 'Network hiccup. Mind sending that again?';
@@ -238,32 +238,3 @@
   </script>
 </body>
 </html>
-
-
-/* api/chat.js — Vercel Serverless Function (Node.js) */
-// Place this file in a lower-case folder named `api` at the repo root:
-// /api/chat.js  → available at https://chat.homerates.ai/api/chat
-
-module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method Not Allowed' });
-    return;
-  }
-
-  try {
-    const { message } = req.body || {};
-    if (!message || typeof message !== 'string') {
-      res.status(400).json({ error: 'Missing `message` in body' });
-      return;
-    }
-
-    // TODO: Replace this with your real model call.
-    // For now, a simple canned reply that keeps the flow moving.
-    const reply = `Got it. Give me a target price, your down payment, and time horizon — I\'ll map the trade-offs and where the math starts working in your favor.`;
-
-    res.status(200).json({ reply });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
