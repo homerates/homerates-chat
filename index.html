@@ -4,22 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HomeRates.ai — Ask Me Anything</title>
-  <meta name="description" content="AI-powered mortgage clarity for CA buyers, owners, and investors." />
   <style>
-    :root{
-      --bg:#0b0b0c; --panel:#151517; --text:#fff; --muted:#d1d1d6; --subtle:#a6a6ad;
-      --border:#2a2a2e; --accent:#39d98a; --radius:12px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
-      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
-    a{color:var(--muted);text-decoration:none}
+    :root{--bg:#0b0b0c;--panel:#151517;--text:#fff;--muted:#d1d1d6;--subtle:#a6a6ad;--border:#2a2a2e;--accent:#39d98a;--radius:12px}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
     .wrap{min-height:100%;display:flex;flex-direction:column}
     header{border-bottom:1px solid var(--border);position:sticky;top:0;background:#0b0b0ccc;backdrop-filter:blur(8px);z-index:10}
     .bar{margin:0 auto;max-width:min(1280px,96vw);padding:14px 16px;display:flex;gap:12px;align-items:center}
-    .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
-    .title{font-weight:600}
-    .badge{margin-left:8px;border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:12px;color:var(--subtle)}
+    .dot{width:10px;height:10px;border-radius:50%;background:#ef4444}
+    .badge{margin-left:6px;border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:12px;color:var(--subtle)}
     main{flex:1}
     .container{margin:0 auto;max-width:min(1280px,96vw);padding:16px;display:grid;grid-template-columns:1fr;gap:14px}
     .thread{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;min-height:58vh;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
@@ -32,10 +24,9 @@
     .kicker{font-size:13px;color:var(--muted)}
     .composer-wrap{position:sticky;bottom:0;border-top:1px solid var(--border);background:#0b0b0ccc;z-index:10}
     .composer{margin:0 auto;max-width:min(1280px,96vw);display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 16px}
-    textarea{width:100%;resize:none;min-height:44px;max-height:180px;padding:12px;border-radius:10px;background:#111113;color:var(--text);border:1px solid var(--border);outline:none;line-height:1.35}
-    button{padding:0 16px;min-width:84px;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:#1c1c22;color:var(--text);font-weight:600;height:44px}
-    button:disabled{opacity:.6;cursor:not-allowed}
-    @media (min-width:1024px){ .container{grid-template-columns:2fr 1fr} } /* chat left, sidebar right */
+    textarea{width:100%;resize:none;min-height:44px;max-height:180px;padding:12px;border-radius:10px;background:#111113;color:#fff;border:1px solid var(--border);outline:none}
+    button{padding:0 16px;min-width:84px;border-radius:10px;border:1px solid var(--border);background:#1c1c22;color:#fff;font-weight:600;height:44px;cursor:pointer}
+    @media (min-width:1024px){ .container{grid-template-columns:2fr 1fr} }
   </style>
 </head>
 <body>
@@ -43,10 +34,10 @@
     <header>
       <div class="bar">
         <div class="dot" id="statusDot" title="script status"></div>
-        <div class="title">HomeRates.ai • Ask Me Anything</div>
+        <strong>HomeRates.ai • Ask Me Anything</strong>
         <span class="badge" id="statusBadge">loading…</span>
         <div style="flex:1"></div>
-        <div class="kicker">California mortgage guidance • NMLS #366082</div>
+        <div class="kicker">CA mortgage guidance • NMLS #366082</div>
       </div>
     </header>
     <main>
@@ -54,9 +45,9 @@
         <section class="thread" id="thread" aria-live="polite"></section>
         <aside class="side">
           <div class="pill">Tips</div>
-          <div class="kicker">Ask about rates, seller credits vs price cuts, Access Zero DPA, DSCR, Jumbo Advantage, or qualification math.</div>
+          <div class="kicker">Ask about rates, seller credits vs price cuts, Access Zero, DSCR, Jumbo Advantage, or qualification math.</div>
           <div class="pill">Disclosure</div>
-          <div class="kicker">Educational content only, not a commitment to lend. CA eligibility. Programs/terms change.</div>
+          <div class="kicker">Educational content only; programs/terms change.</div>
         </aside>
       </div>
     </main>
@@ -67,6 +58,8 @@
       </form>
     </div>
   </div>
+  <!-- cache-bust main.js -->
+  <script>window.__BUST__='v'+Date.now();</script>
   <script src="/main.js" defer></script>
 </body>
 </html>
