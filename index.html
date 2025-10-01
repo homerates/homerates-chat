@@ -1,11 +1,20 @@
 ﻿<!doctype html>
-<title>Diag index</title>
-<h1>Diag Index Page</h1>
-<p>If you see this, index.html is updating from GitHub.</p>
-<pre id="out"></pre>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diag Index — 20250930-220040</title>
+<style>body{margin:0;background:#0b0b0c;color:#fff;font:16px system-ui}main{max-width:900px;margin:40px auto;padding:0 16px}pre{background:#151517;border:1px solid #2a2a2e;border-radius:10px;padding:12px}</style>
+<main>
+  <h1>Diag Index — 20250930-220040</h1>
+  <p>If you see this, <strong>index.html</strong> is updating from GitHub.</p>
+  <p>Version API response:</p>
+  <pre id="out">loading…</pre>
+</main>
 <script>
 (async ()=>{
-  const r = await fetch('/api/version',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-  document.getElementById('out').textContent = await r.text();
+  try{
+    const r = await fetch('/api/version',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    document.getElementById('out').textContent = await r.text();
+  }catch(e){
+    document.getElementById('out').textContent = 'fetch error: '+(e&&e.message||e);
+  }
 })();
 </script>
