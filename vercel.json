@@ -1,7 +1,10 @@
 ﻿{
   "functions": {
-    "api/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  }
+    "api/*.js": { "runtime": "nodejs20.x" }
+  },
+  "routes": [
+    { "src": "/api/ping", "dest": "/api/ping.js" },
+    { "src": "/api/chat", "dest": "/api/chat.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
