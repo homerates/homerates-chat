@@ -1,74 +1,11 @@
 ﻿<!doctype html>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HomeRates Chat — inline diag</title>
-<style>
-  body{margin:0;background:#0b0b0c;color:#fff;font:15px system-ui}
-  main{max-width:900px;margin:40px auto;padding:0 16px}
-  #log{background:#151517;border:1px solid #2a2a2e;border-radius:8px;padding:12px;min-height:160px;white-space:pre-wrap}
-  button,input{font:15px system-ui}
-  input{width:100%;padding:10px;background:#111;border:1px solid #2a2a2e;color:#fff;border-radius:8px}
-  button{padding:10px 14px;border:1px solid #2a2a2e;background:#1c1c22;color:#fff;border-radius:8px;cursor:pointer}
-  .row{display:flex;gap:8px;margin-top:10px}
-</style>
-<main>
-  <h1>HomeRates Chat — diagnostics</h1>
-  <p>Status: <span id="status">loading...</span></p>
-  <div id="log"></div>
-
-  <div class="row">
-    <button id="btnPing">Test /api/ping</button>
-    <button id="btnChat">Send "Say hello" to /api/chat</button>
-  </div>
-  <div class="row">
-    <input id="custom" placeholder='Custom message (e.g., "Payment on , 10% down, 740 FICO")'>
-    <button id="btnSend">Send</button>
-  </div>
-
+<title>Diag index</title>
+<h1>Diag Index Page</h1>
+<p>If you see this, index.html is updating from GitHub.</p>
+<pre id="out"></pre>
 <script>
-(function(){
-  const S = document.getElementById('status');
-  const L = document.getElementById('log');
-  const log = (x)=>{ L.textContent += (L.textContent? "\\n":"") + (typeof x==="string"? x : JSON.stringify(x,null,2)); };
-
-  function ok(t){ S.textContent=t; S.style.color="#39d98a"; }
-  function bad(t){ S.textContent=t; S.style.color="#ef4444"; }
-
-  // boot beacon
-  try{
-    ok("BOOT OK");
-    log("boot: inline script running");
-  }catch(e){ bad("BOOT FAIL"); log(e?.message||String(e)); }
-
-  async function post(path, body){
-    const r = await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body||{})});
-    const txt = await r.text();
-    let j; try{ j=JSON.parse(txt); }catch(_){ j={raw:txt}; }
-    return {ok:r.ok,status:r.status,json:j,raw:txt};
-  }
-
-  async function doPing(){
-    log("→ POST /api/ping {}");
-    try{
-      const p = await post("/api/ping",{});
-      log(p); if(p.ok) ok("PING OK"); else bad("PING "+p.status);
-    }catch(e){ bad("PING ERR"); log(e?.message||String(e)); }
-  }
-  async function doChat(msg){
-    log('→ POST /api/chat {"messages":[{"role":"user","content":'+JSON.stringify(msg)+'}]}');
-    try{
-      const c = await post("/api/chat",{messages:[{role:"user",content:msg}]});
-      log(c); if(c.ok) ok("CHAT OK"); else bad("CHAT "+c.status);
-    }catch(e){ bad("CHAT ERR"); log(e?.message||String(e)); }
-  }
-
-  document.getElementById('btnPing').onclick = doPing;
-  document.getElementById('btnChat').onclick = ()=>doChat("Say hello");
-  document.getElementById('btnSend').onclick = ()=>{
-    const v = (document.getElementById('custom').value||"").trim(); if(!v) return;
-    doChat(v);
-  };
-
-  // auto-run ping on load
-  doPing();
+(async ()=>{
+  const r = await fetch('/api/version',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  document.getElementById('out').textContent = await r.text();
 })();
 </script>
