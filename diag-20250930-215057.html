@@ -1,0 +1,16 @@
+﻿<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diag 20250930-215057</title>
+<body style="background:#0b0b0c;color:#fff;font:15px system-ui">
+  <main style="max-width:900px;margin:40px auto;padding:0 16px">
+    <h1>Diag 20250930-215057</h1>
+    <p>If you see this, you’re reading the repo’s static file at /diag-20250930-215057.html</p>
+    <pre id="out" style="background:#151517;border:1px solid #2a2a2e;border-radius:8px;padding:12px"></pre>
+    <script>
+      (async ()=>{
+        const r = await fetch('/api/version', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        const t = await r.text(); document.getElementById('out').textContent = t;
+      })();
+    </script>
+  </main>
+</body>
