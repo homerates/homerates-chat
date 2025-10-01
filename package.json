@@ -1,0 +1,6 @@
+﻿{
+  "name": "homerates-chat",
+  "private": true,
+  "type": "commonjs",
+  "engines": { "node": ">=20" }
+}
