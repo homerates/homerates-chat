@@ -25,7 +25,7 @@ module.exports = async function (req, res) {
       return;
     }
 
-    // short-circuit ping to save tokens
+    // short-circuit ping
     if (messages[0]?.content?.toLowerCase?.() === 'ping') {
       res.status(200).json({ reply: 'pong' });
       return;
@@ -44,26 +44,26 @@ module.exports = async function (req, res) {
       max_tokens: Number(process.env.RESPONSE_MAX_TOKENS || 600)
     };
 
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': Bearer ,
-        'Content-Type': 'application/json'
+        "Authorization": "Bearer " + apiKey,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     });
 
     const text = await r.text();
     if (!r.ok) {
-      res.status(r.status).json({ error: 'Upstream error', detail: text.slice(0, 1000) });
+      res.status(r.status).json({ error: "Upstream error", detail: text.slice(0, 1000) });
       return;
     }
 
     let j = {};
     try { j = JSON.parse(text); } catch {}
-    const reply = j?.choices?.[0]?.message?.content?.trim() || '';
+    const reply = j?.choices?.[0]?.message?.content?.trim() || "";
     res.status(200).json({ reply });
   } catch (err) {
-    res.status(500).json({ error: 'Function crash', detail: String(err?.stack || err) });
+    res.status(500).json({ error: "Function crash", detail: String(err?.stack || err) });
   }
 };
