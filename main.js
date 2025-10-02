@@ -203,4 +203,49 @@
     await post('/api/chat', { messages:[{role:'user',content:'ping'}] });
     setStatus('ready','#39d98a');
   }catch{ setStatus('api error','#ef4444'); } })();
+})();;(() => {
+  // Status pill if missing
+  const status = document.getElementById('status') || (()=>{const s=document.createElement('span');s.id='status';s.style.cssText='position:fixed;top:8px;right:8px;background:#222;padding:4px 8px;border:1px solid #444;border-radius:6px;font:12px system-ui;color:#ddd;z-index:9999';document.body.appendChild(s);return s;})();
+  const set = (t,c)=>{ status.textContent=t; status.style.color=c||'#a6a6ad'; };
+
+  // Ensure composer exists and is wired
+  let form = document.getElementById('composer');
+  let input = document.getElementById('query') || document.getElementById('input');
+  if (!form) {
+    form = document.createElement('form'); form.id='composer'; form.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;display:flex;gap:8px';
+    input = document.createElement('input'); input.id='query'; input.placeholder='Type and Enter to send'; input.style.cssText='flex:1;height:44px';
+    const btn=document.createElement('button'); btn.type='submit'; btn.textContent='Send';
+    form.appendChild(input); form.appendChild(btn); document.body.appendChild(form);
+  }
+  if (!input) { input = document.createElement('input'); input.id='query'; form.prepend(input); }
+
+  const thread = document.getElementById('thread') || (()=>{const d=document.createElement('div');d.id='thread';d.style.cssText='min-height:40vh;margin:60px 12px;background:#111;border:1px solid #333;color:#eee;padding:10px;border-radius:8px;font:14px system-ui';document.body.appendChild(d);return d;})();
+  const log = t => { const p=document.createElement('div'); p.textContent=String(t); thread.appendChild(p); thread.scrollTop=thread.scrollHeight; };
+
+  // Global error logger
+  window.addEventListener('error', e => { set('js error','#ef4444'); log('JS error: '+(e?.error?.message||e?.message||String(e))); });
+
+  // Prove JS loaded
+  log('boot: diag client loaded');
+
+  // Test ping from the page
+  (async()=>{ try{
+    const r = await fetch('/api/ping', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    log('ping: '+await r.text()); set('ready','#39d98a');
+  } catch(err){ log('ping failed: '+err.message); set('ping failed','#ef4444'); }})();
+
+  // Guaranteed submit handler that posts to /api/chat and prints raw result
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const text = (input.value||'').trim(); if(!text) return;
+    input.value=''; log('you: '+text);
+    try{
+      const r = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:text}]})});
+      const body = await r.text();
+      log('chat: '+body);
+      set(r.ok ? 'ready':'api error', r.ok ? '#39d98a' : '#ef4444');
+    }catch(err){
+      log('chat failed: '+err.message); set('api error','#ef4444');
+    }
+  });
 })();
