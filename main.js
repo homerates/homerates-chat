@@ -295,3 +295,60 @@
     }
   });
 })();
+;(() => {
+  function wireComposer() {
+    const form   = document.getElementById('composer');
+    const input  = document.getElementById('query') || document.getElementById('input');
+    const thread = document.getElementById('thread');
+    if (!form || !input || !thread) {
+      console.error('Missing element(s):', { form: !!form, input: !!input, thread: !!thread });
+      return;
+    }
+
+    // Helper to add lines to thread
+    const add = (txt, color) => {
+      const d = document.createElement('div');
+      d.textContent = String(txt);
+      d.style.whiteSpace = 'pre-wrap';
+      if (color) d.style.color = color;
+      thread.appendChild(d);
+      thread.scrollTop = thread.scrollHeight;
+    };
+
+    // Remove any previous handler
+    if (form.__hr_wired) {
+      form.removeEventListener('submit', form.__hr_wired);
+    }
+
+    // New submit handler
+    const onSubmit = async (e) => {
+      e.preventDefault();
+      const text = (input.value || '').trim();
+      if (!text) return;
+      input.value = '';
+      add('you: ' + text);
+
+      try {
+        const r = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages:[{role:'user', content:text}] })
+        });
+        const body = await r.text();
+        add('chat: ' + body);
+      } catch (err) {
+        add('chat failed: ' + (err?.message || err), '#ef4444');
+      }
+    };
+
+    form.addEventListener('submit', onSubmit);
+    form.__hr_wired = onSubmit;
+    console.log('Composer wired');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireComposer);
+  } else {
+    wireComposer();
+  }
+})();
