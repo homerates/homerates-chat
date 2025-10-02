@@ -219,4 +219,84 @@
 
   // first render
   drawLists(); loadChat();
+})();;(() => {
+  // Minimal markdown cleaner -> HTML (no **, no ###, keeps bullets & paragraphs)
+  function hrTidy(text) {
+    let s = String(text || "").replace(/\r\n/g, "\n").trim();
+
+    // strip triple backtick fences but keep their content
+    s = s.replace(/`[\s\S]*?`/g, m => m.replace(/`/g, ""));
+
+    // headings -> bold line
+    s = s.replace(/^\s*#{1,6}\s*(.+)$/gm, (_m, t) => "<strong>" + escapeHtml(t.trim()) + "</strong>");
+
+    // bold/italic
+    s = s.replace(/\*\*(.+?)\*\*/g, "<strong></strong>");
+    s = s.replace(/\*(.+?)\*/g, "<em></em>");
+
+    // normalize bullets
+    s = s.replace(/^[\-\u2022]\s+/gm, "• ");
+
+    // collapse excessive blank lines
+    s = s.replace(/\n{3,}/g, "\n\n");
+
+    // paragraphize, keeping bullet blocks as <ul>
+    const parts = s.split(/\n{2,}/);
+    const html = parts.map(block => {
+      const lines = block.split("\n");
+      const lis = lines
+        .filter(l => /^\s*•\s+/.test(l))
+        .map(l => "<li>" + escapeHtml(l.replace(/^\s*•\s+/, "")) + "</li>")
+        .join("");
+      if (lis) return "<ul>" + lis + "</ul>";
+      return "<p>" + escapeHtml(block).replace(/\n/g, "<br/>") + "</p>";
+    }).join("");
+    return html;
+  }
+
+  function escapeHtml(x) {
+    return String(x).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  // Format any .bubble node (only if it looks like plain text, not already HTML)
+  function formatBubble(el) {
+    if (!el) return;
+    // If it already contains tags (e.g., our previous tidy ran), skip
+    const hasTags = /<\/?[a-z][\s\S]*>/i.test(el.innerHTML);
+    // If it came in as plain text (no tags) or we see raw **/##, reformat
+    const needs = !hasTags || /\*\*|^#+\s/m.test(el.innerText);
+    if (!needs) return;
+    const txt = el.innerText;           // pull text as user saw it
+    el.innerHTML = hrTidy(txt);         // replace with cleaned HTML
+  }
+
+  function formatExisting() {
+    document.querySelectorAll(".bubble").forEach(formatBubble);
+  }
+
+  // Run once on load (in case content already present)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", formatExisting);
+  } else {
+    formatExisting();
+  }
+
+  // Observe future message insertions
+  const host = document.getElementById("thread") || document.body;
+  const mo = new MutationObserver(muts => {
+    for (const m of muts) {
+      m.addedNodes && m.addedNodes.forEach(node => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.classList?.contains("bubble")) {
+          formatBubble(node);
+        } else {
+          node.querySelectorAll?.(".bubble")?.forEach(formatBubble);
+        }
+      });
+    }
+  });
+  mo.observe(host, { childList: true, subtree: true });
+
+  // Expose for quick console tests if needed
+  window.__hrTidy = hrTidy;
 })();
