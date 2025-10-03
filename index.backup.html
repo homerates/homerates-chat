@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HomeRates.ai — Ask Me Anything</title>
+  <style>
+    :root{
+      --bg:#0b0b0c; --panel:#151517; --panel2:#101014; --text:#f5f5f7; --muted:#c7c7ce;
+      --subtle:#a6a6ad; --border:#2a2a2e; --accent:#39d98a; --danger:#ef4444; --radius:14px
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
+      font:15px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
+    .app{min-height:100dvh;display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto}
+    /* Sidebar */
+    .side{grid-row:1 / span 3;background:var(--panel);border-right:1px solid var(--border);padding:12px;display:flex;flex-direction:column;gap:10px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:600}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+    .section-title{margin-top:6px;color:var(--subtle);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .btn{display:flex;align-items:center;gap:8px;justify-content:center;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer}
+    .list{display:flex;flex-direction:column;gap:6px;overflow:auto}
+    .item{padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:#0f0f12;cursor:pointer}
+    .item.active{outline:2px solid var(--accent);border-color:transparent}
+    .item small{color:var(--subtle);display:block;margin-top:2px}
+    /* Header */
+    header{grid-column:2;background:linear-gradient(#0b0b0ccc,#0b0b0ccc);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
+    .bar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px}
+    .kicker{color:var(--muted);font-size:13px}
+    .status{margin-left:8px;border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:12px;color:var(--subtle)}
+    /* Main */
+    main{grid-column:2;display:flex;flex-direction:column;gap:10px;padding:14px}
+    .thread{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+    .msg{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+    .who{width:28px;height:28px;border-radius:8px;background:#222227;display:grid;place-items:center;font-size:12px;color:var(--subtle);border:1px solid var(--border)}
+    .bubble{background:#1b1b1f;border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+    .user .bubble{background:#101014}
+    .bubble h1,.bubble h2,.bubble h3{font-size:15px;margin:.2em 0}
+    .bubble ul{margin:.4em 0 .4em 1.2em;padding:0}
+    .bubble li{margin:.2em 0}
+    pre{white-space:pre-wrap}
+    /* Composer */
+    .composer-wrap{grid-column:2;border-top:1px solid var(--border);background:#0b0b0ccc;position:sticky;bottom:0;z-index:6}
+    .composer{max-width:1100px;margin:0 auto;padding:10px;display:grid;grid-template-columns:1fr auto;gap:8px}
+    textarea{width:100%;resize:none;min-height:46px;max-height:160px;padding:12px;border-radius:12px;background:#111113;color:var(--text);border:1px solid var(--border);outline:none}
+    button{padding:0 16px;min-width:90px;border-radius:12px;border:1px solid var(--border);background:#1b1b22;color:var(--text);font-weight:600;cursor:pointer;height:46px}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .row{display:flex;gap:8px}
+    .danger{color:var(--danger)}
+    @media (max-width:900px){ .app{grid-template-columns:1fr} .side{display:none} }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><div class="dot"></div>HomeRates.ai</div>
+      <button id="newChat" class="btn">+ New Chat</button>
+      <div class="section-title">Projects</div>
+      <div class="row">
+        <input id="projectName" placeholder="New project name" style="flex:1;height:36px;border-radius:10px;border:1px solid var(--border);background:#0f0f12;color:var(--text);padding:6px 10px"/>
+        <button id="addProject" class="btn" style="height:36px;min-width:86px">Add</button>
+      </div>
+      <div id="projects" class="list" style="max-height:28vh"></div>
+      <div class="section-title">Chats</div>
+      <div id="chats" class="list" style="max-height:36vh"></div>
+      <div class="section-title">Archive</div>
+      <div id="archive" class="list" style="max-height:22vh"></div>
+    </aside>
+
+    <header>
+      <div class="bar">
+        <div>
+          <b>Ask Me Anything</b>
+          <span id="status" class="status">loading...</span>
+        </div>
+        <div class="kicker">California mortgage guidance • NMLS #366082</div>
+      </div>
+    </header>
+
+    <main>
+      <section id="thread" class="thread" aria-live="polite"></section>
+    </main>
+
+    <div class="composer-wrap">
+      <form id="composer" class="composer">
+        <textarea id="input" placeholder="Ask about rates, programs, or qualification… (Shift+Enter for newline)"></textarea>
+        <div class="row">
+          <button id="archiveChat" type="button" title="Archive this chat">Archive</button>
+          <button id="send" type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/main.js?v=14" defer></script>
+</body>
+</html>

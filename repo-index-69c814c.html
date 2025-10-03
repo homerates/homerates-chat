@@ -1,0 +1,115 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HomeRates.ai ò Ask Me Anything</title>
+  <meta name="color-scheme" content="dark light">
+  <style>
+    :root{
+      --bg:#0d0e11; --panel:#14151a; --panel2:#101116; --text:#f6f7fb; --muted:#c6c8d0; --subtle:#a9acb5;
+      --border:#232530; --accent:#39d98a; --danger:#ef4444; --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
+      font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
+    a{color:inherit;text-decoration:none}
+    .app{min-height:100dvh;display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto}
+    /* Sidebar */
+    aside{grid-row:1 / span 3;background:var(--panel);border-right:1px solid var(--border);padding:12px;display:flex;flex-direction:column;gap:12px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:600}
+    .logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#1f9d6a)}
+    .btn{display:flex;align-items:center;gap:8px;justify-content:center;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer}
+    .btn.secondary{background:#0f1015}
+    .section-title{margin-top:6px;color:var(--subtle);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .list{display:flex;flex-direction:column;gap:6px;overflow:auto}
+    .item{padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:#0f1014;cursor:pointer}
+    .item.active{outline:2px solid var(--accent);border-color:transparent}
+    .item small{color:var(--subtle);display:block;margin-top:2px}
+    input[type="text"]{height:36px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:#0f1014;color:var(--text);width:100%}
+    /* Header */
+    header{grid-column:2;background:linear-gradient(#0d0e11cc,#0d0e11cc);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+    .bar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px}
+    .title{display:flex;align-items:center;gap:10px}
+    .status{border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:12px;color:var(--subtle)}
+    .kicker{color:var(--muted);font-size:13px}
+    /* Composer (sticky at top, like ChatGPT search) */
+    .composer-wrap{grid-column:2;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:9}
+    .composer{max-width:1000px;margin:8px auto 0;padding:10px;display:grid;grid-template-columns:1fr auto;gap:8px}
+    .composer input{height:46px;border-radius:12px;border:1px solid var(--border);background:#11131a;color:var(--text);padding:0 12px;outline:none}
+    .composer button{height:46px;min-width:96px;border-radius:12px;border:1px solid var(--border);background:#1b1e27;color:var(--text);font-weight:600;cursor:pointer}
+    .composer button:disabled{opacity:.6;cursor:not-allowed}
+    /* Main thread */
+    main{grid-column:2;display:flex;flex-direction:column}
+    .thread{flex:1;max-width:1000px;margin:12px auto;padding:0 10px 16px;display:flex;flex-direction:column;gap:10px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+    .msg{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+    .who{width:28px;height:28px;border-radius:8px;background:#1a1c23;display:grid;place-items:center;font-size:12px;color:var(--subtle);border:1px solid var(--border)}
+    .bubble{background:#141721;border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+    .user .bubble{background:#0f1118}
+    .bubble p{margin:.35em 0}
+    .bubble ul{margin:.3em 0 .3em 1.2em}
+    /* Footer */
+    footer{grid-column:2;color:var(--subtle);font-size:12px;display:flex;justify-content:center;padding:10px 0 20px}
+    /* Responsive */
+    @media (max-width:900px){ .app{grid-template-columns:1fr} aside{display:none} .composer-wrap{top:56px} }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand"><div class="logo"></div><div>HomeRates.ai</div></div>
+      <button id="newChat" class="btn">+ New Chat</button>
+      <div class="section-title">Quick</div>
+      <div class="list" style="grid-auto-rows:min-content">
+        <div id="quickSearch" class="item">?? Search</div>
+        <div id="quickProject" class="item">?? New Project</div>
+      </div>
+      <div class="section-title">Projects</div>
+      <div class="list">
+        <div class="row" style="display:flex;gap:8px">
+          <input id="projectName" type="text" placeholder="New project name"/>
+          <button id="addProject" class="btn secondary" style="height:36px;min-width:86px">Add</button>
+        </div>
+        <div id="projects" class="list" style="max-height:22vh"></div>
+      </div>
+      <div class="section-title">Chats</div>
+      <div id="chats" class="list" style="max-height:30vh"></div>
+      <div class="section-title">Archive</div>
+      <div id="archive" class="list" style="max-height:20vh"></div>
+    </aside>
+
+    <header>
+      <div class="bar">
+        <div class="title"><b>Ask Me Anything</b> <span id="status" class="status">loadingà</span></div>
+        <div class="kicker">California mortgage guidance ò NMLS #366082</div>
+      </div>
+    </header>
+
+    <div class="composer-wrap">
+      <form id="composer" class="composer" autocomplete="off">
+        <input id="query" type="text" placeholder="Ask about rates, programs, or qualificationà (Enter sends, Shift+Enter = newline)"/>
+        <button id="send" type="submit">Send</button>
+      </form>
+    </div>
+
+    <main>
+      <section id="thread" class="thread">
+        <div class="card">
+          <div class="msg assistant">
+            <div class="who">AI</div>
+            <div class="bubble">
+              <p>Welcome. Share price, down payment, and credit score for a quick ballpark and structure notes (seller credit vs. price cut, Access Zero, points).</p>
+              <p style="color:var(--subtle)">Educational only; California rules.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>Not a commitment to lend. Subject to change. ⌐ HomeRates.ai</footer>
+  </div>
+
+  <script defer src="/main.js?v=3300"></script>
+</body>
+</html>
