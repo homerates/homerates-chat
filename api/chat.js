@@ -1,4 +1,13 @@
-﻿import fetch from "node-fetch"; // Vercel includes this; safe shim
+﻿const VERSION = "chat.js v20251003-1";  // update last digit if you push again today
+console.log(`${VERSION} deployed at ${new Date().toISOString()}`);
+
+
+
+console.log("chat.js vTavily-safe deployed", new Date().toISOString());
+
+
+// api/chat.js — OpenAI + Tavily safe handler
+
 async function readBody(req) {
   return new Promise((resolve) => {
     try {
@@ -27,7 +36,8 @@ async function maybeSearch(query) {
     });
     const data = await resp.json();
     return (data.results || []).map(r => `- ${r.title} (${r.url})`);
-  } catch {
+  } catch (e) {
+    console.error("maybeSearch fail", e);
     return [];
   }
 }
@@ -48,7 +58,7 @@ export default async function handler(req, res) {
 
     const last = messages[messages.length - 1]?.content || "";
     if (last.trim().toLowerCase() === "ping") {
-      res.status(200).json({ reply: "pong (openai+tavily v1)" });
+      res.status(200).json({ reply: "pong (openai+tavily safe)" });
       return;
     }
 
@@ -56,7 +66,7 @@ export default async function handler(req, res) {
     if (body.forceSearch) {
       const sources = await maybeSearch(last);
       if (sources.length) {
-        context = "\n\nGrounding sources:\n" + sources.join("\n");
+        context = "\n\nSources:\n" + sources.join("\n");
       }
     }
 
@@ -66,15 +76,14 @@ export default async function handler(req, res) {
       return;
     }
 
-    const model = process.env.CHAT_MODEL || "gpt-4o-mini";
     const payload = {
-      model,
-      temperature: body.temperature ?? 0.4,
-      max_tokens: Number(process.env.RESPONSE_MAX_TOKENS || 900),
+      model: process.env.CHAT_MODEL || "gpt-4o-mini",
+      temperature: 0.4,
+      max_tokens: 600,
       messages: [
         {
           role: "system",
-          content: "You are GPT-5 for HomeRates.ai. Plain text only, no markdown. Short, clean paragraphs."
+          content: "You are GPT-5 for HomeRates.ai. Plain text only. Short, clean paragraphs."
         },
         ...messages,
         ...(context ? [{ role: "system", content: context }] : [])
@@ -90,12 +99,11 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload)
     });
 
-    const text = await r.text();
-    const j = JSON.parse(text || "{}");
+    const j = await r.json();
     const reply = j?.choices?.[0]?.message?.content?.trim() || "";
-
     res.status(200).json({ reply });
   } catch (err) {
-    res.status(500).json({ error: "Chat crash", detail: String(err?.stack || err) });
+    console.error("chat.js crash", err);
+    res.status(500).json({ error: "Chat crash", detail: String(err) });
   }
 }
