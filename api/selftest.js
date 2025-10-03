@@ -1,7 +1,7 @@
-﻿// api/selftest.js
-module.exports = async function (req, res) {
+﻿const { json } = require('./_nodejson.js');
+async function handler(req, res) {
   try {
-    const hasFetch = typeof fetch === 'function';
+    const hasFetch = (typeof fetch === 'function');
     const openai   = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 15;
     const tavily   = !!process.env.TAVILY_API_KEY && process.env.TAVILY_API_KEY.length > 10;
     const model    = process.env.CHAT_MODEL || 'gpt-4o-mini';
@@ -12,7 +12,7 @@ module.exports = async function (req, res) {
       REGION: process.env.VERCEL_REGION,
       RUNTIME: process.env.AWS_EXECUTION_ENV || '(unknown)'
     };
-    res.status(200).json({
+    json(res, 200, {
       ok: true,
       node: process.version,
       hasFetch,
@@ -21,6 +21,8 @@ module.exports = async function (req, res) {
       time: Date.now()
     });
   } catch (e) {
-    res.status(500).json({ ok:false, error: String(e?.stack || e) });
+    json(res, 500, { ok:false, error: String(e?.stack || e) });
   }
-};
+}
+module.exports = handler;
+module.exports.config = { runtime: 'nodejs18.x' };
