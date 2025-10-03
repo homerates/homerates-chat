@@ -1,23 +1,23 @@
-﻿...
-module.exports = async (req, res) => {
-  try{
-    if (req.method !== 'POST') return json(res,405,{error:'Method not allowed'});
-
-    let body = {};
-    try { body = await readBody(req); }
-    catch(e){ return json(res,400,{error:'Body parse failed', detail:String(e)}); }
-
-    const msgs = Array.isArray(body?.messages) ? body.messages : null;
-    if (!msgs?.length) {
-      return json(res,400,{error:'Missing messages array', got: body});
+﻿export default async function handler(req, res) {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const first = (msgs[0]?.content||'').trim().toLowerCase();
-    if (first === 'ping') return json(res,200,{reply:'pong'});
+    const { messages = [], forceSearch = false } = req.body || {};
+    const last = messages[messages.length - 1]?.content || "";
 
-    ...
-  }catch(err){
-    return json(res,500,{ error:'Function crash', detail:String(err?.stack||err) });
+    // Simple echo behavior
+    if (last.toLowerCase().trim() === "ping") {
+      return res.status(200).json({ reply: "pong (minimal handler v1)" });
+    }
+
+    return res.status(200).json({
+      reply: `You said: "${last}" (forceSearch=${forceSearch})`,
+    });
+  } catch (err) {
+    console.error("chat.js crash", err);
+    return res.status(500).json({ error: "Server error", detail: err.message });
   }
-};
-module.exports.config = { runtime: 'nodejs18.x' };
+}
+
