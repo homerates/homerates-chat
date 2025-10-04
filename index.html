@@ -1,52 +1,79 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>HomeRates Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>HomeRates.ai — Ask Me Anything</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    body { margin:0; font-family: system-ui, sans-serif; color:#222; background:#fafafa; height:100vh; display:flex; }
-    .layout { display:grid; grid-template-columns: 260px 1fr; width:100%; }
-    .sidebar { background:#f4f4f4; border-right:1px solid #ddd; padding:1rem; display:flex; flex-direction:column; gap:.75rem; }
-    .sidebar h2 { margin:0; font-size:1rem; opacity:.85; }
-    .sidegroup { margin-top:.25rem; }
-    .sidegroup h3 { margin:.5rem 0 .35rem; font-size:.9rem; opacity:.7; }
-    .sidebtn, .sideitem { width:100%; text-align:left; background:#fff; border:1px solid #ddd; border-radius:8px; padding:.55rem .65rem; margin:.25rem 0; cursor:pointer; font-size:.95rem; }
-    .sideitem { background:#fff; }
-    .muted { font-size:.85rem; opacity:.75; }
-    .main { display:flex; flex-direction:column; height:100vh; }
-    .thread { flex:1; overflow-y:auto; padding:1rem; }
-    .composer { border-top:1px solid #ddd; padding:.5rem; display:flex; gap:.5rem; }
-    .composer textarea { flex:1; resize:none; padding:.5rem; font-size:1rem; }
-    .composer button { padding:.5rem 1rem; font-size:1rem; cursor:pointer; }
-    .msg { white-space: pre-wrap; line-height:1.45; margin-bottom:1rem; }
-    .msg p { margin:0 0 .75rem; }
-    .msg.assistant { background:#fff; padding:.75rem; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,.1); }
-    .msg.user { text-align:right; font-weight:600; }
-    .sources-head { margin-top:.5rem; font-size:.85rem; opacity:.8; }
-    .sources { margin:.25rem 0 .5rem 1.1rem; padding:0; }
-    .sources li { margin:.2rem 0; }
-    .sources a { text-decoration: underline; color:#0645AD; }
-    .hidden { display:none !important; }
-    .footer { border-top:1px dashed #ddd; padding:.4rem .75rem; font-size:.85rem; color:#555; display:flex; gap:.75rem; align-items:center; }
-    .dot { width:8px; height:8px; border-radius:50%; background:#38b000; }
-    @media (max-width: 640px) {
-      .layout { grid-template-columns: 1fr !important; }
-      .sidebar { order:2; }
-      .main { order:1; }
-      .composer { position: sticky; bottom:0; background:#fff; }
+    :root{
+      --border:#ddd; --muted:#666; --bg:#fafafa; --card:#fff; --link:#0645AD;
+      --sidebar:#f4f4f4; --shadow:0 1px 2px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:#222;display:flex}
+
+    /* Layout */
+    .layout{display:grid;grid-template-columns:260px 1fr;width:100%}
+    .sidebar{background:var(--sidebar);border-right:1px solid var(--border);padding:12px;display:flex;flex-direction:column;gap:.75rem;min-height:100vh}
+    .main{display:flex;flex-direction:column;height:100vh}
+
+    /* Brand */
+    .brand{display:flex;align-items:center;gap:.6rem;padding:6px 8px}
+    .brand .logo{width:32px;height:32px;display:block}
+    .brand .brand-text{font-size:1rem;font-weight:600}
+
+    /* Sidebar sections */
+    .sidegroup h3{margin:.5rem 4px .35rem;font-size:.9rem;opacity:.7}
+    .sidebtn,.sideitem{width:100%;text-align:left;background:#fff;border:1px solid var(--border);border-radius:8px;padding:.55rem .65rem;margin:.25rem 0;cursor:pointer;font-size:.95rem}
+    .muted{font-size:.88rem;opacity:.75}
+
+    /* Thread + composer */
+    .thread{flex:1;overflow-y:auto;padding:1rem}
+    .composer{border-top:1px solid var(--border);padding:.5rem;display:flex;gap:.5rem;background:#fff}
+    .composer textarea{flex:1;resize:none;padding:.6rem;font-size:1rem;border:1px solid var(--border);border-radius:8px}
+    .composer button{padding:.6rem 1rem;font-size:1rem;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer}
+
+    /* Messages */
+    .msg{white-space:pre-wrap;line-height:1.45;margin:0 0 1rem}
+    .msg.user{text-align:right;font-weight:600}
+    .msg.assistant{background:var(--card);padding:.75rem;border-radius:8px;box-shadow:var(--shadow)}
+    .msg p{margin:0 0 .75rem}
+    .sources-head{margin-top:.5rem;font-size:.85rem;opacity:.8}
+    .sources{margin:.25rem 0 .5rem 1.1rem;padding:0}
+    .sources li{margin:.2rem 0}
+    .sources a{color:var(--link);text-decoration:underline}
+
+    /* Footer (version) */
+    .footer{border-top:1px dashed var(--border);padding:.4rem .6rem;font-size:.85rem;color:#555;display:flex;gap:.5rem;align-items:center;margin-top:auto}
+    .dot{width:8px;height:8px;border-radius:50%;background:#38b000}
+
+    /* Loading flag (hidden by default, JS toggles) */
+    #loading{margin-left:auto;font-size:.85rem;opacity:.75}
+    .hidden{display:none!important}
+
+    /* Mobile */
+    @media (max-width:640px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{order:2}
+      .main{order:1}
+      .composer{position:sticky;bottom:0}
     }
   </style>
 </head>
 <body>
   <div class="layout">
-    <aside class="sidebar">
-      <h2>HomeRates.ai</h2>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img class="logo" src="assets/hr-logo.svg" alt="HomeRates.ai" />
+        <span class="brand-text">HomeRates.ai</span>
+      </div>
 
       <div class="sidegroup">
-        <button id="new-chat" class="sidebtn">New Chat</button>
-        <button id="save-chat" class="sidebtn">Save Chat</button>
+        <button id="new-chat"   class="sidebtn">New Chat</button>
+        <button id="save-chat"  class="sidebtn">Save Chat</button>
         <button id="new-project" class="sidebtn">New Project</button>
       </div>
 
@@ -62,19 +89,23 @@
 
       <div class="footer">
         <span class="dot" title="API healthy"></span>
-        <span id="version">v0</span>
+        <span id="version">UI</span>
+        <span id="loading" class="hidden">Loading…</span>
       </div>
     </aside>
 
+    <!-- MAIN -->
     <main class="main">
       <div id="thread" class="thread"></div>
+
       <form id="composer" class="composer">
-        <textarea id="query" rows="2" placeholder="Ask me anything..."></textarea>
+        <textarea id="query" rows="2" placeholder="Ask me anything…"></textarea>
         <button id="send" type="submit">Send</button>
       </form>
     </main>
   </div>
 
+  <!-- JS -->
   <script src="main.js?v=13"></script>
 </body>
 </html>
