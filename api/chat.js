@@ -1,4 +1,4 @@
-﻿const VERSION = "chat.js v20251003-6";
+﻿const VERSION = "chat.js v20251003-7";
 
 // ----- helpers -----
 async function readBody(req) {
@@ -16,36 +16,65 @@ function wantsFreshInfo(text) {
   return /today|latest|this week|current|now|rate|rates|mortgage|fed|cpi|jobs|treasury|headline|market/.test(s);
 }
 
-async function tavilySearch(query) {
+function sanitizeSnippet(s="") {
+  return String(s).replace(/\s+/g, " ").trim();
+}
+
+async function tavilySearchWithSnippets(query) {
   try {
     const key = process.env.TAVILY_API_KEY;
-    if (!key) return { sources: [], ok: false, error: "no_key" };
+    if (!key) return { sources: [], context: "", ok: false, error: "no_key" };
+
+    const body = {
+      query,
+      max_results: 4,
+      include_answer: true,        // ask Tavily to synthesize
+      search_depth: "advanced"     // better snippets
+    };
+
     const resp = await fetch("https://api.tavily.com/search", {
       method: "POST",
       headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
-      body: JSON.stringify({ query, max_results: 4 })
+      body: JSON.stringify(body)
     });
+
     if (!resp.ok) {
       const text = await resp.text();
-      console.error("tavily non-OK", resp.status, text.slice(0,200));
-      return { sources: [], ok: false, error: "bad_status_"+resp.status };
+      console.error("tavily non-OK", resp.status, text.slice(0, 200));
+      return { sources: [], context: "", ok: false, error: "bad_status_" + resp.status };
     }
+
     const data = await resp.json();
-    const sources = Array.isArray(data.results) ? data.results.map(r => `- ${r.title} (${r.url})`) : [];
-    return { sources, ok: true };
+    const results = Array.isArray(data.results) ? data.results : [];
+    const sources = results.map(r => `- ${r.title} (${r.url})`);
+
+    // Build compact context: title + snippet/content if present
+    const lines = results.slice(0, 4).map(r => {
+      const snippet = sanitizeSnippet(r.content || r.snippet || "");
+      return `• ${r.title}: ${snippet}${snippet ? "" : ""}`;
+    });
+
+    const context =
+      (lines.length ? "Live web context:\n" + lines.join("\n") : "") +
+      (sources.length ? "\n\nSources:\n" + sources.join("\n") : "");
+
+    return { sources, context, ok: true };
   } catch (e) {
-    console.error("tavilySearch fail", e);
-    return { sources: [], ok: false, error: "exception" };
+    console.error("tavilySearchWithSnippets fail", e);
+    return { sources: [], context: "", ok: false, error: "exception" };
   }
 }
 
-function postFilter(text) {
+function postFilter(text, hasSources) {
   if (!text) return "";
   let t = String(text);
-  // Remove common stale disclaimers
-  t = t.replace(/as of my last update[^.]*\.?\s*/gi, "");
-  t = t.replace(/i (cannot|can't) provide real[- ]?time data[^.]*\.?\s*/gi, "");
-  t = t.replace(/i don't have access to the internet[^.]*\.?\s*/gi, "");
+  // Remove stale disclaimers when we HAVE sources
+  if (hasSources) {
+    t = t.replace(/as of my last update[^.]*\.?\s*/gi, "");
+    t = t.replace(/i (cannot|can't) provide real[- ]?time data[^.]*\.?\s*/gi, "");
+    t = t.replace(/i don't have access to the internet[^.]*\.?\s*/gi, "");
+    t = t.replace(/i couldn't fetch live sources[^.]*\.?\s*/gi, "");
+  }
   // Trim excessive blank lines
   t = t.replace(/\n{3,}/g, "\n\n").trim();
   return t;
@@ -64,12 +93,14 @@ export default async function handler(req, res) {
     if (last.toLowerCase() === "ping") return res.status(200).json({ reply: "pong (esm+search)", meta: { version: VERSION } });
 
     const fresh = body.forceSearch === true || wantsFreshInfo(last);
-    let context = ""; let meta = { fresh, tavily: false, sources: 0, version: VERSION };
+    let meta = { fresh, tavily: false, sources: 0, version: VERSION };
+    let sourcesBlock = "", contextBlock = "";
 
     if (fresh) {
-      const { sources, ok } = await tavilySearch(last);
+      const { sources, context, ok } = await tavilySearchWithSnippets(last);
       meta.tavily = ok; meta.sources = sources.length;
-      if (sources.length) context = "\n\nSources:\n" + sources.join("\n");
+      sourcesBlock = sources.length ? "\n\nSources:\n" + sources.join("\n") : "";
+      contextBlock = context || "";
     }
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -77,22 +108,24 @@ export default async function handler(req, res) {
 
     const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "America/Los_Angeles" });
 
-    const system = [
+    const instructions = [
       "You are GPT-5 for HomeRates.ai.",
       `Today is ${today} (America/Los_Angeles).`,
-      "Output must be plain text. Short, clean paragraphs. Use '-' for bullets if useful.",
-      "If a Sources section is provided, synthesize the answer using those sources and state the relevant date plainly.",
-      "Do not say you lack real-time data. If sources are empty but the user asked for 'today/current', say you couldn't fetch live sources right now and suggest retry."
+      "Output must be plain text. Short, clean paragraphs. Use '-' for bullets where helpful.",
+      "If a 'Live web context' section is present, rely on that factual context to answer directly and concisely.",
+      "If a 'Sources:' section is present, cite the key points in your own words and keep the list intact below your answer.",
+      "Do NOT say you lack real-time data when sources are provided. If sources are empty and the user asked for 'today/current', say live sources couldn't be fetched right now and suggest retry."
     ].join(" ");
 
     const payload = {
       model: process.env.CHAT_MODEL || "gpt-4o-mini",
       temperature: 0.4,
-      max_tokens: Number(process.env.RESPONSE_MAX_TOKENS || 700),
+      max_tokens: Number(process.env.RESPONSE_MAX_TOKENS || 750),
       messages: [
-        { role: "system", content: system },
+        { role: "system", content: instructions },
         ...messages,
-        ...(context ? [{ role: "system", content: context }] : [])
+        ...(fresh && contextBlock ? [{ role: "system", content: contextBlock }] : []),
+        ...(fresh && sourcesBlock ? [{ role: "system", content: sourcesBlock }] : [])
       ]
     };
 
@@ -107,10 +140,12 @@ export default async function handler(req, res) {
 
     let j = {}; try { j = JSON.parse(text); } catch {}
     let reply = j?.choices?.[0]?.message?.content?.trim() || "";
-    reply = postFilter(reply);
+    reply = postFilter(reply, meta.sources > 0);
 
-    // Stamp date on fresh answers
-    if (fresh) reply = `${today}\n\n${reply}${context ? context : ""}`;
+    // Prepend date for fresh answers; keep sources block (already included in context if any)
+    if (fresh) {
+      reply = `${today}\n\n${reply}${sourcesBlock ? sourcesBlock : ""}`;
+    }
 
     return res.status(200).json({ reply, meta });
   } catch (err) {
