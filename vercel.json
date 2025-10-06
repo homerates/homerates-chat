@@ -1,11 +1,10 @@
 ﻿{
   "version": 3,
   "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
+    "api/*.js": { "runtime": "nodejs18.x" }
   },
   "routes": [
+    { "src": "^/$", "dest": "/api/home.js" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
