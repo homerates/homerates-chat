@@ -1,4 +1,8 @@
 ﻿{
-  "cleanUrls": true,
-  "trailingSlash": false
+  "version": 3,
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
