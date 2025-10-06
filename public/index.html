@@ -1,0 +1,55 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HomeRates.ai — Ask Me Anything</title>
+  <style>
+    /* ultra-light default so page is usable even if CSS is missing */
+    :root{--bg:#0b0b0f;--fg:#e7e7ee;--muted:#a6a6b3;--panel:#13131a;--accent:#4da3ff;}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+    .app{display:grid;grid-template-columns:280px 1fr;gap:0;height:100%;}
+    .sidebar{background:var(--panel);border-right:1px solid #1d1d26;padding:14px;overflow:auto}
+    .brand{font-weight:700;margin:6px 0 14px 0}
+    .btn{display:block;width:100%;margin:6px 0;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171f;color:var(--fg);text-align:left}
+    .main{display:flex;flex-direction:column;min-width:0;height:100%}
+    #thread{flex:1;overflow:auto;padding:16px}
+    .composer-wrap{border-top:1px solid #1d1d26;padding:10px;background:var(--panel)}
+    #composer{display:flex;gap:8px}
+    #query{flex:1;min-height:48px;max-height:160px;resize:vertical;border-radius:10px;border:1px solid #2a2a35;background:#0f0f15;color:var(--fg);padding:10px}
+    #send{min-width:110px;border-radius:10px;border:1px solid #2a2a35;background:var(--accent);color:#001028;font-weight:600}
+    .msg{background:#0f0f15;border:1px solid #1d1d26;border-radius:12px;padding:12px;margin:0 0 12px 0;white-space:pre-wrap}
+    .msg.user{background:#11111a}
+    .sources-head{margin-top:8px;font-weight:600;color:var(--muted)}
+    .sources{margin:4px 0 0 18px}
+    @media (max-width:880px){.app{grid-template-columns:1fr}.sidebar{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">🏠 HomeRates.ai</div>
+      <button class="btn" id="newChatBtn">New Chat</button>
+      <button class="btn" id="saveChatBtn">Save Chat</button>
+      <button class="btn" id="newProjectBtn">New Project</button>
+      <div id="projectsList"></div>
+      <hr style="border-color:#1d1d26;margin:12px 0">
+      <div id="savedThreads"></div>
+    </aside>
+
+    <main class="main">
+      <div id="thread" aria-live="polite"></div>
+
+      <div class="composer-wrap">
+        <form id="composer">
+          <textarea id="query" placeholder="Ask about mortgages, payments, seller credits…"></textarea>
+          <button id="send" type="submit">Send</button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <!-- Keep this exactly; main.js v13 looks for these IDs -->
+  <script src="main.js?v=13"></script>
+</body>
+</html>
