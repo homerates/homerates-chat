@@ -1,11 +1,8 @@
 ﻿export default function handler(req, res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  res.status(200).send(`<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  res.status(200).send(`<!doctype html><html lang="en"><head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HomeRates.ai — Ask Me Anything</title>
   <style>
     :root{--bg:#0b0b0f;--fg:#e7e7ee;--muted:#a6a6b3;--panel:#13131a;--accent:#4da3ff;}
@@ -25,9 +22,7 @@
     .sources-head{margin-top:8px;font-weight:600;color:var(--muted)}
     .sources{margin:4px 0 0 18px}
     @media (max-width:880px){.app{grid-template-columns:1fr}.sidebar{display:none}}
-  </style>
-</head>
-<body>
+  </style></head><body>
   <div class="app">
     <aside class="sidebar">
       <div class="brand">🏠 HomeRates.ai</div>
@@ -49,6 +44,5 @@
     </main>
   </div>
   <script src="/main.js?v=13"></script>
-</body>
-</html>`);
+</body></html>`);
 }
