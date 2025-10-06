@@ -1,4 +1,4 @@
-const VERSION = "chat.js v20251005-8";
+﻿const VERSION = "chat.js v20251003-7";
 
 // ----- helpers -----
 async function readBody(req) {
@@ -13,31 +13,11 @@ async function readBody(req) {
 
 function wantsFreshInfo(text) {
   const s = (text || "").toLowerCase();
-  return /today|latest|this week|current|now|rate|rates|mortgage|fed|cpi|jobs|treasury|headline|market|yields?|inflation|news|update/.test(s);
+  return /today|latest|this week|current|now|rate|rates|mortgage|fed|cpi|jobs|treasury|headline|market/.test(s);
 }
 
-function sanitizeSnippet(s = "") {
+function sanitizeSnippet(s="") {
   return String(s).replace(/\s+/g, " ").trim();
-}
-
-function parseDateMaybe(d) {
-  try { const t = Date.parse(d); return Number.isFinite(t) ? t : 0; } catch { return 0; }
-}
-function fmtDateISO(dstr) {
-  const t = parseDateMaybe(dstr);
-  if (!t) return "";
-  const dt = new Date(t);
-  return dt.toISOString().slice(0,10);
-}
-
-async function withTimeout(promise, ms = 12000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort("timeout"), ms);
-  try {
-    return await promise(ctrl.signal);
-  } finally {
-    clearTimeout(t);
-  }
 }
 
 async function tavilySearchWithSnippets(query) {
@@ -45,57 +25,33 @@ async function tavilySearchWithSnippets(query) {
     const key = process.env.TAVILY_API_KEY;
     if (!key) return { sources: [], context: "", ok: false, error: "no_key" };
 
-    // Configurable recency + domains
-    const days = Number(process.env.TAVILY_DAYS || 3);
-    const includeDomains = (process.env.TAVILY_INCLUDE_DOMAINS || "")
-      .split(",").map(s => s.trim()).filter(Boolean);
-
     const body = {
-      api_key: key,                // <- body, not header
-      query: query,
-      topic: "news",               // <- force recency domain
-      days: days,                  // <- recency bound
-      search_depth: "advanced",
-      max_results: 12,
-      include_answer: true,
-      include_raw_content: false,
-      ...(includeDomains.length ? { include_domains: includeDomains } : {})
+      query,
+      max_results: 4,
+      include_answer: true,        // ask Tavily to synthesize
+      search_depth: "advanced"     // better snippets
     };
 
-    const resp = await withTimeout((signal) =>
-      fetch("https://api.tavily.com/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal
-      })
-    );
+    const resp = await fetch("https://api.tavily.com/search", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
 
     if (!resp.ok) {
-      const text = await resp.text().catch(()=>"");
+      const text = await resp.text();
       console.error("tavily non-OK", resp.status, text.slice(0, 200));
       return { sources: [], context: "", ok: false, error: "bad_status_" + resp.status };
     }
 
-    const data = await resp.json().catch(()=>({}));
+    const data = await resp.json();
     const results = Array.isArray(data.results) ? data.results : [];
+    const sources = results.map(r => `- ${r.title} (${r.url})`);
 
-    // Sort by published_date desc; keep undated at bottom
-    const sorted = results
-      .map(r => ({ ...r, _t: parseDateMaybe(r.published_date) }))
-      .sort((a,b) => (b._t - a._t));
-
-    // Compact context block
-    const lines = sorted.slice(0, 6).map(r => {
+    // Build compact context: title + snippet/content if present
+    const lines = results.slice(0, 4).map(r => {
       const snippet = sanitizeSnippet(r.content || r.snippet || "");
-      const d = fmtDateISO(r.published_date);
-      const dateTag = d ? ` [${d}]` : "";
-      return `• ${r.title}${dateTag}: ${snippet}`;
-    });
-
-    const sources = sorted.slice(0, 8).map(r => {
-      const d = fmtDateISO(r.published_date);
-      return `- ${r.title}${d ? ` [${d}]` : ""} (${r.url})`;
+      return `• ${r.title}: ${snippet}${snippet ? "" : ""}`;
     });
 
     const context =
@@ -112,37 +68,31 @@ async function tavilySearchWithSnippets(query) {
 function postFilter(text, hasSources) {
   if (!text) return "";
   let t = String(text);
+  // Remove stale disclaimers when we HAVE sources
   if (hasSources) {
     t = t.replace(/as of my last update[^.]*\.?\s*/gi, "");
     t = t.replace(/i (cannot|can't) provide real[- ]?time data[^.]*\.?\s*/gi, "");
     t = t.replace(/i don't have access to the internet[^.]*\.?\s*/gi, "");
     t = t.replace(/i couldn't fetch live sources[^.]*\.?\s*/gi, "");
   }
+  // Trim excessive blank lines
   t = t.replace(/\n{3,}/g, "\n\n").trim();
   return t;
 }
 
-async function handler(req, res) {
-
+export default async function handler(req, res) {
   try {
     console.log(VERSION, "start", new Date().toISOString());
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-
-    // no-store so we don't serve stale responses during dev
-    res.setHeader("Cache-Control", "no-store");
 
     const body = await readBody(req);
     const messages = Array.isArray(body?.messages) ? body.messages : null;
     if (!messages?.length) return res.status(400).json({ error: "Missing messages array", got: body });
 
     const last = (messages[messages.length - 1]?.content || "").trim();
-    if (last.toLowerCase() === "ping") {
-      return res.status(200).json({ reply: "pong (esm+search)", meta: { version: VERSION } });
-    }
+    if (last.toLowerCase() === "ping") return res.status(200).json({ reply: "pong (esm+search)", meta: { version: VERSION } });
 
-    const forceSearch = body.forceSearch === true;
-    const fresh = forceSearch || wantsFreshInfo(last);
-
+    const fresh = body.forceSearch === true || wantsFreshInfo(last);
     let meta = { fresh, tavily: false, sources: 0, version: VERSION };
     let sourcesBlock = "", contextBlock = "";
 
@@ -156,10 +106,7 @@ async function handler(req, res) {
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) return res.status(500).json({ error: "Missing OPENAI_API_KEY" });
 
-    const today = new Date().toLocaleDateString("en-US", {
-      year: "numeric", month: "long", day: "numeric",
-      timeZone: "America/Los_Angeles"
-    });
+    const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "America/Los_Angeles" });
 
     const instructions = [
       "You are GPT-5 for HomeRates.ai.",
@@ -182,27 +129,20 @@ async function handler(req, res) {
       ]
     };
 
-    const r = await withTimeout((signal) =>
-      fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + OPENAI_API_KEY,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload),
-        signal
-      })
-    , Number(process.env.OPENAI_TIMEOUT_MS || 20000));
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + OPENAI_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
     const text = await r.text();
-    if (!r.ok) {
-      return res.status(r.status).json({ error: "Upstream error", detail: text.slice(0, 800), meta });
-    }
+    if (!r.ok) return res.status(r.status).json({ error: "Upstream error", detail: text.slice(0,800), meta });
 
     let j = {}; try { j = JSON.parse(text); } catch {}
     let reply = j?.choices?.[0]?.message?.content?.trim() || "";
     reply = postFilter(reply, meta.sources > 0);
 
+    // Prepend date for fresh answers; keep sources block (already included in context if any)
     if (fresh) {
       reply = `${today}\n\n${reply}${sourcesBlock ? sourcesBlock : ""}`;
     }
@@ -213,4 +153,3 @@ async function handler(req, res) {
     return res.status(500).json({ error: "Chat crash", detail: String(err) });
   }
 }
-module.exports = handler;
