@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   // ===== Utilities & Storage =====
   const LS = {
     get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },

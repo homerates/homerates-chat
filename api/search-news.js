@@ -1,4 +1,4 @@
-﻿// api/search-news.js  (CommonJS; works without "type":"module")
+// api/search-news.js  (CommonJS; works without "type":"module")
 const cutoffDays = 3; // tweak to 1–7 as needed
 
 module.exports = async (req, res) => {

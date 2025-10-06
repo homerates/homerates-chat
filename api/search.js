@@ -1,4 +1,4 @@
-﻿// api/search.js — isolated Tavily search with guardrails
+// api/search.js — isolated Tavily search with guardrails
 
 export default async function handler(req, res) {
   try {

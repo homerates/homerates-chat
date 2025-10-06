@@ -1,4 +1,4 @@
-﻿/* main.js — HR Chat UI v13
+/* main.js — HR Chat UI v13
    - Clean render (no ** or ###), Sources list
    - Solid loading behavior
    - Sidebar wired: New Chat, Save Chat, New Project, Projects list, Saved threads
@@ -211,8 +211,8 @@ if (form) {
     setLoading(true);
     try {
       const payload = { messages: [...state.messages], forceSearch: shouldForceSearch(q) };
-      const res = await fetch("/api/chat", {
-        method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload)
+      const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages }) })
+ }, body: JSON.stringify(payload)
       });
       let data = {}; try { data = await res.json(); } catch {}
       const reply = typeof data?.reply === "string" ? data.reply : "Sorry — no answer.";

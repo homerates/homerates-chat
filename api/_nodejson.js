@@ -1,4 +1,4 @@
-﻿function json(res, code, obj) {
+function json(res, code, obj) {
   try {
     res.statusCode = code;
     res.setHeader('Content-Type','application/json; charset=utf-8');

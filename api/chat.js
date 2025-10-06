@@ -1,4 +1,4 @@
-﻿const VERSION = "chat.js v20251005-8";
+const VERSION = "chat.js v20251005-8";
 
 // ----- helpers -----
 async function readBody(req) {

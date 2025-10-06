@@ -1,4 +1,4 @@
-﻿/* main.js — HR Chat UI v13
+/* main.js — HR Chat UI v13
    - Clean render (no ** or ###), Sources list
    - Solid loading behavior
    - Sidebar wired: New Chat, Save Chat, New Project, Projects list, Saved threads

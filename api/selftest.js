@@ -1,4 +1,4 @@
-﻿const { json } = require('./_nodejson.js');
+const { json } = require('./_nodejson.js');
 module.exports = async (req, res) => {
   try {
     json(res, 200, {
