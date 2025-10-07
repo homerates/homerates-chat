@@ -1,4 +1,28 @@
-﻿console.log('[HR] main.js v22 loaded @', new Date().toISOString());
+﻿;(() => {
+  try{
+    const VERSION = 'v23';
+    // version badge
+    const b = document.getElementById('build'); if (b) b.textContent = VERSION;
+    // loading control
+    const L = document.getElementById('loading');
+    const setLoading = (on) => { if (L) L.textContent = on ? 'loading…' : ''; };
+    setLoading(false); // hide at boot
+
+    // wrap fetch so loading is accurate without touching your chat code
+    if (!window.__hrFetchWrapped) {
+      const _f = window.fetch.bind(window);
+      window.fetch = async (...args) => {
+        setLoading(true);
+        try { return await _f(...args); }
+        finally { setLoading(false); }
+      };
+      window.__hrFetchWrapped = true;
+    }
+
+    console.log('[HR] main.js', VERSION, 'loaded @', new Date().toISOString());
+  }catch(e){ console.error('v23 shim failed', e); }
+})();
+console.log('[HR] main.js v22 loaded @', new Date().toISOString());
 (async function(){ try{
 console.log('[HR] main.js v21 loaded @', new Date().toISOString());
 /* main.js â€” HR Chat UI v13
@@ -334,3 +358,4 @@ btnNewProject?.addEventListener("click", newProject);
     }
   }catch(e){ console.error('sidebar toggle wire fail', e); }
 })();
+
