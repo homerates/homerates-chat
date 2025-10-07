@@ -1,4 +1,24 @@
-/* main.js — HR Chat UI v13
+﻿;(() => {
+  try{
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = (id) => document.getElementById(id);
+      const build = el('build'); if (build) build.textContent = 'v26';
+      const loading = el('loading'); if (loading) loading.textContent = '';
+      console.log('[HR] main.js v26 guard @', new Date().toISOString());
+    });
+    // Wrap fetch so the 'loading…' badge reflects actual requests
+    if (!window.__hrFetchWrapped) {
+      const _f = window.fetch.bind(window);
+      window.fetch = async (...args) => {
+        try { const L = document.getElementById('loading'); if (L) L.textContent = 'loading…'; } catch(_){}
+        try { return await _f(...args); }
+        finally { try { const L2 = document.getElementById('loading'); if (L2) L2.textContent = ''; } catch(_){} }
+      };
+      window.__hrFetchWrapped = true;
+    }
+  }catch(e){ console.error('v26 guard failed', e); }
+})();
+/* main.js â€” HR Chat UI v13
    - Clean render (no ** or ###), Sources list
    - Solid loading behavior
    - Sidebar wired: New Chat, Save Chat, New Project, Projects list, Saved threads
@@ -46,7 +66,7 @@ if (!loading) {
   loading = document.createElement("div");
   loading.id = "loading";
   loading.className = "hidden";
-  loading.textContent = "Loading…";
+  loading.textContent = "Loadingâ€¦";
   (form || document.body).appendChild(loading);
 }
 
@@ -106,7 +126,7 @@ function renderSidebars() {
         btn.className = "sideitem";
         const date = new Date(t.ts).toLocaleString();
         btn.textContent = t.title || ("Thread " + date);
-        btn.title = date + (t.projectId ? " • " + (state.projects.find(p=>p.id===t.projectId)?.name||"") : "");
+        btn.title = date + (t.projectId ? " â€¢ " + (state.projects.find(p=>p.id===t.projectId)?.name||"") : "");
         btn.addEventListener("click", () => loadThread(t.id));
         savedList.appendChild(btn);
       });
@@ -215,13 +235,13 @@ if (form) {
         method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload)
       });
       let data = {}; try { data = await res.json(); } catch {}
-      const reply = typeof data?.reply === "string" ? data.reply : "Sorry — no answer.";
+      const reply = typeof data?.reply === "string" ? data.reply : "Sorry â€” no answer.";
       addAssistantBubble(reply);
       state.messages.push({ role:"assistant", content:reply });
       saveState();
     } catch (err) {
       console.error("composer submit error", err);
-      addAssistantBubble("Sorry — something went wrong. Try again.");
+      addAssistantBubble("Sorry â€” something went wrong. Try again.");
     } finally {
       setLoading(false);
       if (input) input.value = "";
@@ -308,3 +328,4 @@ function summaryFromMessages(msgs) {
 btnNewChat?.addEventListener("click", newChat);
 btnSaveChat?.addEventListener("click", saveChat);
 btnNewProject?.addEventListener("click", newProject);
+
