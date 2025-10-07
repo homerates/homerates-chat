@@ -1,4 +1,6 @@
-﻿;(() => {
+﻿/* HR live bump v30 — 2025-10-07 11:08:50 */
+console.log('[HR] main.js v30 live @ ' + new Date().toISOString());
+;(() => {
   try{
     document.addEventListener('DOMContentLoaded', () => {
       const el = (id) => document.getElementById(id);
@@ -328,4 +330,5 @@ function summaryFromMessages(msgs) {
 btnNewChat?.addEventListener("click", newChat);
 btnSaveChat?.addEventListener("click", saveChat);
 btnNewProject?.addEventListener("click", newProject);
+
 
