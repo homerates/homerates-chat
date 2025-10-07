@@ -1,4 +1,6 @@
-﻿/* HR live bump v30 — 2025-10-07 11:08:50 */
+﻿/* HR v31 — 2025-10-07 14:25:15 */
+console.log('[HR] main.js v31 live @ ' + new Date().toISOString());
+/* HR live bump v30 — 2025-10-07 11:08:50 */
 console.log('[HR] main.js v30 live @ ' + new Date().toISOString());
 ;(() => {
   try{
@@ -332,3 +334,87 @@ btnSaveChat?.addEventListener("click", saveChat);
 btnNewProject?.addEventListener("click", newProject);
 
 
+
+;(() => {
+  try {
+    const log=(...a)=>console.log('[HR v31]',...a);
+    const byId=(id)=>document.getElementById(id);
+    document.addEventListener('DOMContentLoaded', () => {
+      const build=byId('build'); if (build) build.textContent='v31';
+      const loading=byId('loading'); if (loading) loading.textContent='';
+
+      // core elements (all optional, guarded)
+      const thread = byId('thread');
+      const form   = byId('composer');
+      const input  = byId('query') || byId('input');
+
+      // sidebar targets (ids may vary; all guarded)
+      const newBtn   = byId('new-chat')     || byId('nav-new');
+      const saveBtn  = byId('save-chat')    || byId('nav-save');
+      const projBtn  = byId('new-project')  || byId('nav-project');
+      const projList = byId('projects-list')|| byId('projects');
+      const savedList= byId('saved-list')   || byId('archives');
+
+      // simple storage
+      const store = {
+        get(k,def){ try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+        set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+      };
+      let threads  = store.get('hr:threads', []);
+      let projects = store.get('hr:projects', []);
+
+      function renderLists(){
+        if (savedList) {
+          savedList.innerHTML='';
+          threads.forEach((t,i)=>{
+            const li=document.createElement('li');
+            const a=document.createElement('a');
+            a.href='#'; a.textContent=t.title || ('Chat '+(i+1));
+            a.onclick=(e)=>{ e.preventDefault(); if (thread) { thread.innerHTML=t.html||''; thread.scrollTop=thread.scrollHeight; } };
+            li.appendChild(a); savedList.appendChild(li);
+          });
+        }
+        if (projList) {
+          projList.innerHTML='';
+          projects.forEach((p,i)=>{
+            const li=document.createElement('li');
+            li.textContent=p.name || ('Project '+(i+1));
+            projList.appendChild(li);
+          });
+        }
+      }
+
+      if (newBtn && thread) {
+        newBtn.onclick=(e)=>{ e.preventDefault(); thread.innerHTML=''; input && input.focus(); log('new chat'); };
+      }
+
+      if (saveBtn && thread) {
+        saveBtn.onclick=(e)=>{
+          e.preventDefault();
+          const title = (input && input.value.trim()) || 'Saved chat';
+          threads.unshift({ title, html: thread.innerHTML, ts: Date.now() });
+          threads = threads.slice(0,50);
+          store.set('hr:threads', threads);
+          renderLists();
+          log('saved chat', title);
+        };
+      }
+
+      if (projBtn) {
+        projBtn.onclick=(e)=>{
+          e.preventDefault();
+          const name = prompt('Project name?');
+          if (!name) return;
+          projects.unshift({ name, ts: Date.now() });
+          projects = projects.slice(0,100);
+          store.set('hr:projects', projects);
+          renderLists();
+          log('new project', name);
+        };
+      }
+
+      renderLists();
+      log('sidebar wired v31');
+    });
+  } catch(e) { console.warn('v31 augment guard', e); }
+})();
