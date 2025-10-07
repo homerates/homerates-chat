@@ -1,5 +1,39 @@
 ﻿;(() => {
   try{
+    // DOM safety + version badge
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = (id) => document.getElementById(id);
+      const build = el('build'); if (build) build.textContent = 'v25';
+      const loading = el('loading'); if (loading) loading.textContent = '';
+      console.log('[HR] main.js v25 guard @', new Date().toISOString());
+
+      // Soft-wrap renderSidebars to avoid null crashes if HTML lags behind JS
+      const g = window;
+      if (typeof g.renderSidebars === 'function' && !g.__hrWrappedRS) {
+        const orig = g.renderSidebars;
+        g.renderSidebars = function(...args){
+          try { return orig.apply(this, args); }
+          catch(e){ console.warn('renderSidebars guarded:', e); }
+        };
+        g.__hrWrappedRS = true;
+      }
+    });
+
+    // Fetch wrapper to show/hide loading without touching your chat code
+    if (!window.__hrFetchWrapped) {
+      const _f = window.fetch.bind(window);
+      window.fetch = async (...a) => {
+        try { const L = document.getElementById('loading'); if (L) L.textContent = 'loading…'; }
+        catch(_) {}
+        try { return await _f(...a); }
+        finally { try { const L2 = document.getElementById('loading'); if (L2) L2.textContent = ''; } catch(_){} }
+      };
+      window.__hrFetchWrapped = true;
+    }
+  }catch(e){ console.error('v25 guard failed', e); }
+})();
+;(() => {
+  try{
     document.addEventListener('DOMContentLoaded', () => {
       const byId = (id) => document.getElementById(id) || null;
 
@@ -396,5 +430,6 @@ btnNewProject?.addEventListener("click", newProject);
     }
   }catch(e){ console.error('sidebar toggle wire fail', e); }
 })();
+
 
 
