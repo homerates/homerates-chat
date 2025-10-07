@@ -1,4 +1,5 @@
-﻿(async function(){ try{
+﻿console.log('[HR] main.js v22 loaded @', new Date().toISOString());
+(async function(){ try{
 console.log('[HR] main.js v21 loaded @', new Date().toISOString());
 /* main.js â€” HR Chat UI v13
    - Clean render (no ** or ###), Sources list
@@ -312,3 +313,24 @@ btnSaveChat?.addEventListener("click", saveChat);
 btnNewProject?.addEventListener("click", newProject);
 
 }catch(e){ console.error('main.js boot fail', e); const t=document.getElementById('thread'); if(t){ const m=document.createElement('div'); m.className='msg'; m.textContent='Client error: '+(e&&e.message?e.message:String(e)); t.appendChild(m);} }})();
+
+;(function(){
+  try{
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest && e.target.closest('#toggleSidebar');
+      if (!btn) return;
+      document.body.classList.toggle('sidebar-open');
+    });
+    var newBtn = document.getElementById('newChatBtn');
+    if (newBtn && window.localStorage) {
+      newBtn.addEventListener('click', function(){
+        try{
+          // Non-destructive: clear composer + append divider in thread
+          var q=document.getElementById('query'); if(q) q.value='';
+          var t=document.getElementById('thread'); 
+          if(t){ var d=document.createElement('div'); d.className='msg'; d.textContent='— New chat —'; t.appendChild(d); t.scrollTop=t.scrollHeight; }
+        }catch(_){}
+      });
+    }
+  }catch(e){ console.error('sidebar toggle wire fail', e); }
+})();
