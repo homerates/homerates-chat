@@ -1,4 +1,6 @@
-/* main.js — HR Chat UI v13
+﻿(async function(){ try{
+console.log('[HR] main.js v21 loaded @', new Date().toISOString());
+/* main.js â€” HR Chat UI v13
    - Clean render (no ** or ###), Sources list
    - Solid loading behavior
    - Sidebar wired: New Chat, Save Chat, New Project, Projects list, Saved threads
@@ -46,7 +48,7 @@ if (!loading) {
   loading = document.createElement("div");
   loading.id = "loading";
   loading.className = "hidden";
-  loading.textContent = "Loading…";
+  loading.textContent = "Loadingâ€¦";
   (form || document.body).appendChild(loading);
 }
 
@@ -106,7 +108,7 @@ function renderSidebars() {
         btn.className = "sideitem";
         const date = new Date(t.ts).toLocaleString();
         btn.textContent = t.title || ("Thread " + date);
-        btn.title = date + (t.projectId ? " • " + (state.projects.find(p=>p.id===t.projectId)?.name||"") : "");
+        btn.title = date + (t.projectId ? " â€¢ " + (state.projects.find(p=>p.id===t.projectId)?.name||"") : "");
         btn.addEventListener("click", () => loadThread(t.id));
         savedList.appendChild(btn);
       });
@@ -215,13 +217,13 @@ if (form) {
         method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload)
       });
       let data = {}; try { data = await res.json(); } catch {}
-      const reply = typeof data?.reply === "string" ? data.reply : "Sorry — no answer.";
+      const reply = typeof data?.reply === "string" ? data.reply : "Sorry â€” no answer.";
       addAssistantBubble(reply);
       state.messages.push({ role:"assistant", content:reply });
       saveState();
     } catch (err) {
       console.error("composer submit error", err);
-      addAssistantBubble("Sorry — something went wrong. Try again.");
+      addAssistantBubble("Sorry â€” something went wrong. Try again.");
     } finally {
       setLoading(false);
       if (input) input.value = "";
@@ -308,3 +310,5 @@ function summaryFromMessages(msgs) {
 btnNewChat?.addEventListener("click", newChat);
 btnSaveChat?.addEventListener("click", saveChat);
 btnNewProject?.addEventListener("click", newProject);
+
+}catch(e){ console.error('main.js boot fail', e); const t=document.getElementById('thread'); if(t){ const m=document.createElement('div'); m.className='msg'; m.textContent='Client error: '+(e&&e.message?e.message:String(e)); t.appendChild(m);} }})();
