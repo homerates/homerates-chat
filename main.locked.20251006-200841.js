@@ -1,103 +1,4 @@
-﻿;(() => {
-  try{
-    // DOM safety + version badge
-    document.addEventListener('DOMContentLoaded', () => {
-      const el = (id) => document.getElementById(id);
-      const build = el('build'); if (build) build.textContent = 'v25';
-      const loading = el('loading'); if (loading) loading.textContent = '';
-      console.log('[HR] main.js v25 guard @', new Date().toISOString());
-
-      // Soft-wrap renderSidebars to avoid null crashes if HTML lags behind JS
-      const g = window;
-      if (typeof g.renderSidebars === 'function' && !g.__hrWrappedRS) {
-        const orig = g.renderSidebars;
-        g.renderSidebars = function(...args){
-          try { return orig.apply(this, args); }
-          catch(e){ console.warn('renderSidebars guarded:', e); }
-        };
-        g.__hrWrappedRS = true;
-      }
-    });
-
-    // Fetch wrapper to show/hide loading without touching your chat code
-    if (!window.__hrFetchWrapped) {
-      const _f = window.fetch.bind(window);
-      window.fetch = async (...a) => {
-        try { const L = document.getElementById('loading'); if (L) L.textContent = 'loading…'; }
-        catch(_) {}
-        try { return await _f(...a); }
-        finally { try { const L2 = document.getElementById('loading'); if (L2) L2.textContent = ''; } catch(_){} }
-      };
-      window.__hrFetchWrapped = true;
-    }
-  }catch(e){ console.error('v25 guard failed', e); }
-})();
-;(() => {
-  try{
-    document.addEventListener('DOMContentLoaded', () => {
-      const byId = (id) => document.getElementById(id) || null;
-
-      // version badge (optional)
-      const build = byId('build'); if (build) build.textContent = 'v24';
-
-      // loading helper
-      const L = byId('loading');
-      window.__hrSetLoading = (on) => { if (L) L.textContent = on ? 'loading…' : ''; };
-      window.__hrSetLoading(false);
-
-      // make any sidebar render code null-safe
-      window.__hrSafeText = (id, txt) => { const n = byId(id); if (n) n.textContent = txt; };
-      window.__hrSafeList = (id, items) => {
-        const ul = byId(id); if (!ul) return;
-        ul.innerHTML = '';
-        (items||[]).forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
-      };
-
-      console.log('[HR] main.js v24 guard loaded @', new Date().toISOString());
-    });
-
-    // Wrap fetch so the loading dot reflects actual requests without touching your chat code
-    if (!window.__hrFetchWrapped) {
-      const _f = window.fetch.bind(window);
-      window.fetch = async (...args) => {
-        if (window.__hrSetLoading) window.__hrSetLoading(true);
-        try { return await _f(...args); }
-        finally { if (window.__hrSetLoading) window.__hrSetLoading(false); }
-      };
-      window.__hrFetchWrapped = true;
-    }
-  } catch(e) {
-    console.error('v24 guard failed', e);
-  }
-})();
-;(() => {
-  try{
-    const VERSION = 'v23';
-    // version badge
-    const b = document.getElementById('build'); if (b) b.textContent = VERSION;
-    // loading control
-    const L = document.getElementById('loading');
-    const setLoading = (on) => { if (L) L.textContent = on ? 'loading…' : ''; };
-    setLoading(false); // hide at boot
-
-    // wrap fetch so loading is accurate without touching your chat code
-    if (!window.__hrFetchWrapped) {
-      const _f = window.fetch.bind(window);
-      window.fetch = async (...args) => {
-        setLoading(true);
-        try { return await _f(...args); }
-        finally { setLoading(false); }
-      };
-      window.__hrFetchWrapped = true;
-    }
-
-    console.log('[HR] main.js', VERSION, 'loaded @', new Date().toISOString());
-  }catch(e){ console.error('v23 shim failed', e); }
-})();
-console.log('[HR] main.js v22 loaded @', new Date().toISOString());
-(async function(){ try{
-console.log('[HR] main.js v21 loaded @', new Date().toISOString());
-/* main.js â€” HR Chat UI v13
+/* main.js — HR Chat UI v13
    - Clean render (no ** or ###), Sources list
    - Solid loading behavior
    - Sidebar wired: New Chat, Save Chat, New Project, Projects list, Saved threads
@@ -145,7 +46,7 @@ if (!loading) {
   loading = document.createElement("div");
   loading.id = "loading";
   loading.className = "hidden";
-  loading.textContent = "Loadingâ€¦";
+  loading.textContent = "Loading…";
   (form || document.body).appendChild(loading);
 }
 
@@ -205,7 +106,7 @@ function renderSidebars() {
         btn.className = "sideitem";
         const date = new Date(t.ts).toLocaleString();
         btn.textContent = t.title || ("Thread " + date);
-        btn.title = date + (t.projectId ? " â€¢ " + (state.projects.find(p=>p.id===t.projectId)?.name||"") : "");
+        btn.title = date + (t.projectId ? " • " + (state.projects.find(p=>p.id===t.projectId)?.name||"") : "");
         btn.addEventListener("click", () => loadThread(t.id));
         savedList.appendChild(btn);
       });
@@ -314,13 +215,13 @@ if (form) {
         method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload)
       });
       let data = {}; try { data = await res.json(); } catch {}
-      const reply = typeof data?.reply === "string" ? data.reply : "Sorry â€” no answer.";
+      const reply = typeof data?.reply === "string" ? data.reply : "Sorry — no answer.";
       addAssistantBubble(reply);
       state.messages.push({ role:"assistant", content:reply });
       saveState();
     } catch (err) {
       console.error("composer submit error", err);
-      addAssistantBubble("Sorry â€” something went wrong. Try again.");
+      addAssistantBubble("Sorry — something went wrong. Try again.");
     } finally {
       setLoading(false);
       if (input) input.value = "";
@@ -407,29 +308,3 @@ function summaryFromMessages(msgs) {
 btnNewChat?.addEventListener("click", newChat);
 btnSaveChat?.addEventListener("click", saveChat);
 btnNewProject?.addEventListener("click", newProject);
-
-}catch(e){ console.error('main.js boot fail', e); const t=document.getElementById('thread'); if(t){ const m=document.createElement('div'); m.className='msg'; m.textContent='Client error: '+(e&&e.message?e.message:String(e)); t.appendChild(m);} }})();
-
-;(function(){
-  try{
-    document.addEventListener('click', function(e){
-      var btn = e.target.closest && e.target.closest('#toggleSidebar');
-      if (!btn) return;
-      document.body.classList.toggle('sidebar-open');
-    });
-    var newBtn = document.getElementById('newChatBtn');
-    if (newBtn && window.localStorage) {
-      newBtn.addEventListener('click', function(){
-        try{
-          // Non-destructive: clear composer + append divider in thread
-          var q=document.getElementById('query'); if(q) q.value='';
-          var t=document.getElementById('thread'); 
-          if(t){ var d=document.createElement('div'); d.className='msg'; d.textContent='— New chat —'; t.appendChild(d); t.scrollTop=t.scrollHeight; }
-        }catch(_){}
-      });
-    }
-  }catch(e){ console.error('sidebar toggle wire fail', e); }
-})();
-
-
-
