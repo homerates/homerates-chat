@@ -22,7 +22,7 @@ console.log('[HR] main.js v30 live @ ' + new Date().toISOString());
     }
   }catch(e){ console.error('v26 guard failed', e); }
 })();
-/* main.js â€” HR Chat UI v13
+/* main.js â€” HR Chat UI v31
    - Clean render (no ** or ###), Sources list
    - Solid loading behavior
    - Sidebar wired: New Chat, Save Chat, New Project, Projects list, Saved threads
@@ -418,3 +418,4 @@ btnNewProject?.addEventListener("click", newProject);
     });
   } catch(e) { console.warn('v31 augment guard', e); }
 })();
+
