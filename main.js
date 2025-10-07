@@ -1,5 +1,43 @@
 ﻿;(() => {
   try{
+    document.addEventListener('DOMContentLoaded', () => {
+      const byId = (id) => document.getElementById(id) || null;
+
+      // version badge (optional)
+      const build = byId('build'); if (build) build.textContent = 'v24';
+
+      // loading helper
+      const L = byId('loading');
+      window.__hrSetLoading = (on) => { if (L) L.textContent = on ? 'loading…' : ''; };
+      window.__hrSetLoading(false);
+
+      // make any sidebar render code null-safe
+      window.__hrSafeText = (id, txt) => { const n = byId(id); if (n) n.textContent = txt; };
+      window.__hrSafeList = (id, items) => {
+        const ul = byId(id); if (!ul) return;
+        ul.innerHTML = '';
+        (items||[]).forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+      };
+
+      console.log('[HR] main.js v24 guard loaded @', new Date().toISOString());
+    });
+
+    // Wrap fetch so the loading dot reflects actual requests without touching your chat code
+    if (!window.__hrFetchWrapped) {
+      const _f = window.fetch.bind(window);
+      window.fetch = async (...args) => {
+        if (window.__hrSetLoading) window.__hrSetLoading(true);
+        try { return await _f(...args); }
+        finally { if (window.__hrSetLoading) window.__hrSetLoading(false); }
+      };
+      window.__hrFetchWrapped = true;
+    }
+  } catch(e) {
+    console.error('v24 guard failed', e);
+  }
+})();
+;(() => {
+  try{
     const VERSION = 'v23';
     // version badge
     const b = document.getElementById('build'); if (b) b.textContent = VERSION;
@@ -358,4 +396,5 @@ btnNewProject?.addEventListener("click", newProject);
     }
   }catch(e){ console.error('sidebar toggle wire fail', e); }
 })();
+
 
