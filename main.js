@@ -82,3 +82,9 @@ document.getElementById("composer")?.addEventListener("submit", async (e) => {
 buildEl.textContent = "app.v31.js active";
 console.log("âœ… HR Chat UI initialized â€” v31");
 
+;(()=>{try{
+  const id='build'; let el=document.getElementById(id);
+  if(!el){ el=document.createElement('div'); el.id=id; el.style='position:fixed;right:10px;bottom:10px;opacity:.6;font:12px system-ui;z-index:9999'; document.body.appendChild(el); }
+  el.textContent='main.js live 20251007-202026';
+  console.log('LOADED main.js','20251007-202026');
+}catch(e){ console.warn('stamp err',e); }})();
