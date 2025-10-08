@@ -3,12 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>HomeRates.ai — Ask Me Anything</title>
+  <title>HomeRates.ai — Ask Me Anything · 20251007-205954</title>
   <style>
-    /* ultra-light default so page is usable even if CSS is missing */
     :root{--bg:#0b0b0f;--fg:#e7e7ee;--muted:#a6a6b3;--panel:#13131a;--accent:#4da3ff;}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial;}
-    .app{display:grid;grid-template-columns:280px 1fr;gap:0;height:100%;}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    .app{display:grid;grid-template-columns:280px 1fr;height:100%}
     .sidebar{background:var(--panel);border-right:1px solid #1d1d26;padding:14px;overflow:auto}
     .brand{font-weight:700;margin:6px 0 14px 0}
     .btn{display:block;width:100%;margin:6px 0;padding:10px 12px;border-radius:10px;border:1px solid #2a2a35;background:#17171f;color:var(--fg);text-align:left}
@@ -24,7 +23,7 @@
     .sources{margin:4px 0 0 18px}
     @media (max-width:880px){.app{grid-template-columns:1fr}.sidebar{display:none}}
   </style>
-<meta name="hr-build" content="20251007-115810"></head>
+</head>
 <body>
   <div class="app">
     <aside class="sidebar">
@@ -39,7 +38,6 @@
 
     <main class="main">
       <div id="thread" aria-live="polite"></div>
-
       <div class="composer-wrap">
         <form id="composer">
           <textarea id="query" placeholder="Ask about mortgages, payments, seller credits…"></textarea>
@@ -49,32 +47,8 @@
     </main>
   </div>
 
-  <!-- Footer build stamps -->
-  <span id="build" style="position:fixed;right:10px;bottom:10px;opacity:.6;font:12px system-ui"></span>
+  <span id="build"   style="position:fixed;right:10px;bottom:10px;opacity:.6;font:12px system-ui"></span>
   <span id="loading" style="position:fixed;right:90px;bottom:10px;opacity:.6;font:12px system-ui"></span>
-  <div id="hr-build" style="position:fixed;right:10px;bottom:28px;font:12px system-ui;opacity:.6;z-index:9999">
-    build 20251007-200100
-  </div>
-
-  <!-- Exactly ONE main.js include -->
-    <script src="/=20251007-201505"></script>
-    <script src="/main.v33.js"></script>
+  <script src="/main.v33.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
